@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
-import productsData from "../data/productsData.js"; // Import central data
+import productsData from "../data/productsData.js";
 
 function HeroSection() {
-  // Filter products from central data that are designated for the hero section
   const heroSlides = productsData.filter(product => product.tag === "hero-product");
-  
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const totalSlides = heroSlides.length;
 
   const goToPrevious = () => {
-    setCurrentSlideIndex((prevIndex) => 
+    setCurrentSlideIndex((prevIndex) =>
       (prevIndex === 0) ? totalSlides - 1 : prevIndex - 1
     );
   };
@@ -22,100 +20,93 @@ function HeroSection() {
 
   useEffect(() => {
     if (totalSlides > 0) {
-      const timer = setInterval(goToNext, 5000); 
-      return () => clearInterval(timer); 
+      const timer = setInterval(goToNext, 5000);
+      return () => clearInterval(timer);
     }
   }, [totalSlides]);
 
   if (totalSlides === 0) return null;
 
   return (
-    <div className="bg-[#111] text-white relative overflow-hidden w-full h-[600px] md:h-[500px]"> 
-      
-      {/* Navigation Arrows */}
-      <button 
-        onClick={goToPrevious} 
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 z-30 p-2 bg-white/10 rounded-full hover:bg-white/20 transition"
+    <div className="bg-[#111] text-white relative overflow-hidden w-full pt-16 h-[550px] sm:h-[650px] md:h-[600px] lg:h-[650px]">
+
+      <button
+        onClick={goToPrevious}
+        className="absolute left-2 md:left-6 top-1/2 transform -translate-y-1/2 z-30 p-2 bg-white/5 backdrop-blur-md rounded-full hover:bg-white/20 transition"
       >
-        <IoIosArrowBack className="text-2xl text-white" />
+        <IoIosArrowBack className="text-xl md:text-3xl text-white" />
       </button>
 
-      <button 
-        onClick={goToNext} 
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 z-30 p-2 bg-white/10 rounded-full hover:bg-white/20 transition"
+      <button
+        onClick={goToNext}
+        className="absolute right-2 md:right-6 top-1/2 transform -translate-y-1/2 z-30 p-2 bg-white/5 backdrop-blur-md rounded-full hover:bg-white/20 transition"
       >
-        <IoIosArrowForward className="text-2xl text-white" />
+        <IoIosArrowForward className="text-xl md:text-3xl text-white" />
       </button>
-      
-      {/* SLIDES TRACK */}
-      <div 
-        className="flex h-full" 
+
+      <div
+        className="flex h-full"
         style={{
           width: `${totalSlides * 100}%`,
           transform: `translateX(-${currentSlideIndex * (100 / totalSlides)}%)`,
-          transition: 'transform 700ms ease-in-out',
+          transition: 'transform 800ms cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         {heroSlides.map((slide) => (
-          <div 
-            key={slide.id} 
-            className="flex-shrink-0 w-full h-full relative"
-            style={{ width: `${100 / totalSlides}%` }} 
+          <div
+            key={slide.id}
+            className="flex-shrink-0 w-full h-full relative overflow-hidden px-4"
+            style={{ width: `${100 / totalSlides}%` }}
           >
-            {/* LARGE WATERMARK TEXT - Using Brand name as watermark */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0">
-                <span className="text-[12vw] font-black text-white/5 uppercase leading-none">
-                    {slide.brand}
-                </span>
+              <span className="text-[22vw] md:text-[15vw] font-black text-white/[0.07] uppercase leading-none">
+                {slide.brand}
+              </span>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center justify-between h-full max-w-7xl mx-auto p-6 md:p-12 relative z-10">
-              
-              {/* Product Image - Using heroImage from data */}
-              <div className="order-1 md:order-2 w-full md:w-1/2 flex justify-center items-center">
-                <img 
-                  src={slide.heroImage} 
-                  alt={slide.title} 
-                  className="max-h-64 md:max-h-96 object-contain drop-shadow-2xl"
+            <div className="flex flex-col md:flex-row items-center justify-center md:justify-between h-full max-w-7xl mx-auto px-4 md:px-12 relative z-10">
+
+              <div className="w-full md:w-1/2 flex justify-center items-center mb-4 md:mb-0">
+                <img
+                  src={slide.heroImage}
+                  alt={slide.title}
+                  className="max-h-[180px] sm:max-h-[280px] md:max-h-[400px] w-auto object-contain drop-shadow-[0_20px_50px_rgba(255,255,255,0.1)]"
                 />
               </div>
-              
-              {/* Text and CTA - Mapping title, tagline, and prices */}
-              <div className="order-2 md:order-1 flex flex-col space-y-4 md:w-1/2 text-left mt-6 md:mt-0">
-                <p className="text-sm md:text-base text-gray-400 font-bold uppercase tracking-widest">
+
+              <div className="flex flex-col items-center md:items-start space-y-3 md:space-y-6 md:w-1/2 text-center md:text-left">
+                <p className="text-[10px] md:text-sm text-red-600 font-bold uppercase tracking-[0.4em]">
                   {slide.title}
                 </p>
-                <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold leading-tight max-w-lg">
+                <h2 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-black italic uppercase leading-[0.95] tracking-tighter max-w-[300px] sm:max-w-md md:max-w-lg">
                   {slide.tagline}
                 </h2>
-                <div className="text-2xl md:text-4xl font-bold flex items-center gap-3">
-                  ₹{slide.finalPrice.toLocaleString()} 
-                  <span className="text-base md:text-xl text-gray-500 line-through font-normal">
-                    ₹{slide.originalPrice.toLocaleString()}
-                  </span>
+
+                <div className="flex items-center gap-4">
+                  <span className="text-xl md:text-5xl font-bold">₹{slide.finalPrice.toLocaleString()}</span>
+                  <span className="text-xs md:text-xl text-zinc-600 line-through">₹{slide.originalPrice.toLocaleString()}</span>
                 </div>
-                <Link 
-                  to={`${slide.path}${slide.id}`} 
-                  className="w-44 text-center bg-red-600 text-white py-3 px-6 rounded-md font-bold hover:bg-red-700 transition duration-300"
+
+                <Link
+                  to={`${slide.path}${slide.id}`}
+                  className="px-8 py-3 font-bold text-white bg-red-600 rounded-sm hover:bg-red-700 uppercase tracking-widest text-[10px] md:text-sm transition-transform active:scale-95"
                 >
                   Shop Now
                 </Link>
               </div>
-              
             </div>
           </div>
         ))}
       </div>
-      
-      {/* Indicator Dots */}
-      <div className="flex justify-center space-x-2 pb-6 absolute bottom-0 left-0 right-0 z-20">
+
+      <div className="absolute bottom-1 left-0 right-0 z-20 flex justify-center items-center gap-x-2">
         {heroSlides.map((_, index) => (
-          <span 
-            key={index} 
+          <button
+            key={index}
             onClick={() => setCurrentSlideIndex(index)}
-            className={`w-10 h-1 rounded-full cursor-pointer transition-all duration-300 
-              ${index === currentSlideIndex ? 'bg-white' : 'bg-gray-600'}`}
-          ></span>
+            className={`h-[4px] md:h-[6px] transition-all duration-300 rounded-full 
+              ${index === currentSlideIndex ? 'w-10 md:w-14 bg-red-600' : 'w-4 md:w-6 bg-zinc-800'}`}
+          ></button>
         ))}
       </div>
     </div>

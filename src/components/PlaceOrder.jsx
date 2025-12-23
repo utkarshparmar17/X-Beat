@@ -1,218 +1,266 @@
 import React, { useState } from "react";
-import { useProducts } from "../context/ProductContext"; 
+import { useProducts } from "../context/ProductContext";
 import { Link } from "react-router-dom";
 import { IoMdCheckmarkCircle } from "react-icons/io";
-import { MdPayment, MdQrCodeScanner, MdOutlineAccountBalanceWallet } from "react-icons/md";
-import QRCode from "react-qr-code"; 
-import { db, auth } from "../firebase";
+import QRCode from "react-qr-code";
+
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db, auth } from "../firebase";
 
 const PlaceOrder = () => {
-  const { cart, clearCart } = useProducts(); 
+  const { cart, clearCart } = useProducts();
+
   const [orderPlaced, setOrderPlaced] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("cod"); 
-  const [formData, setFormData] = useState({ fullName: "", email: "", address: "" });
+  const [paymentMethod, setPaymentMethod] = useState("cod");
 
-  // --- NEW UPI STATES ---
-  const [upiIdInput, setUpiIdInput] = useState("");
-  const [isUpiVerified, setIsUpiVerified] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    addressLine: "",
+    city: "",
+    state: "",
+    pincode: "",
+  });
 
-  const totalAmount = cart.reduce((acc, item) => acc + item.finalPrice * item.quantity, 0);
+  const [upiId, setUpiId] = useState("");
+  const [upiVerified, setUpiVerified] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+
+  const totalAmount = cart.reduce(
+    (acc, item) => acc + item.finalPrice * item.quantity,
+    0
+  );
+
   const myUpiId = "parmarutkarshparmar777@okhdfcbank";
-  const upiPaymentLink = `upi://pay?pa=${myUpiId}&pn=X-Beat&am=${totalAmount}&cu=INR`;
+  const upiLink = `upi://pay?pa=${myUpiId}&pn=X-Beat&am=${totalAmount}&cu=INR`;
 
-  // --- UPI VERIFICATION LOGIC ---
-  const handleUpiVerify = () => {
-    if (!upiIdInput.includes("@")) {
-      alert("Please enter a valid UPI ID (e.g. name@bank)");
+  const verifyUpi = () => {
+    if (!upiId.includes("@")) {
+      alert("Enter valid UPI ID");
       return;
     }
-    setIsVerifying(true);
-    // Simulate sending a request to the user's UPI app
+    setVerifying(true);
     setTimeout(() => {
-      setIsVerifying(false);
-      setIsUpiVerified(true);
+      setVerifying(false);
+      setUpiVerified(true);
     }, 2000);
   };
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
-    // Extra safety check for UPI
-    if (paymentMethod === "upi" && !isUpiVerified) {
-      alert("Please verify your UPI ID before completing the purchase.");
+
+    if (paymentMethod === "upi" && !upiVerified) {
+      alert("Verify UPI first");
       return;
     }
+
+    // ✅ CONSOLE OUTPUT (PRODUCTS + ADDRESS)
+    console.log("ORDER PLACED");
+    console.log("PRODUCT DETAILS:", cart);
+    console.log("CUSTOMER ADDRESS:", formData);
 
     try {
       await addDoc(collection(db, "orders"), {
         userId: auth.currentUser ? auth.currentUser.uid : "guest",
-        customerName: formData.fullName,
-        email: formData.email,
-        address: formData.address,
         items: cart,
         amount: totalAmount,
-        paymentMethod: paymentMethod,
-        upiHandle: paymentMethod === "upi" ? upiIdInput : null,
+        paymentMethod,
         status: paymentMethod === "cod" ? "Confirmed" : "Payment Pending",
+        upiHandle: paymentMethod === "upi" ? upiId : null,
+        address: { ...formData },
         createdAt: serverTimestamp(),
       });
 
+      clearCart();
       setOrderPlaced(true);
-      if (clearCart) clearCart();
-    } catch (error) {
-      alert("Error placing order. Please try again.");
+    } catch (err) {
+      alert("Order failed");
     }
   };
 
+  // ✅ SUCCESS SCREEN
   if (orderPlaced) {
     return (
-      <div className="bg-[#0e0e0e] min-h-screen text-white flex flex-col items-center justify-center px-4 pt-16">
-        <IoMdCheckmarkCircle className="text-green-500 text-8xl mb-6 animate-bounce" />
-        <h2 className="text-3xl font-black italic tracking-tighter uppercase">Order Successful!</h2>
-        <p className="text-zinc-500 mb-8 mt-2 text-center text-sm uppercase tracking-widest">
-           A payment request was sent to {upiIdInput || "your app"}
-        </p>
-        <Link to="/" className="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-12 transition-all uppercase text-xs tracking-widest">
-          Return Home
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white">
+        <IoMdCheckmarkCircle className="text-green-500 text-7xl mb-4" />
+        <h2 className="text-2xl font-bold">Order Placed Successfully</h2>
+        <Link
+          to="/"
+          className="mt-6 bg-red-600 hover:bg-red-700 px-8 py-3 text-sm font-bold uppercase"
+        >
+          Go Home
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#0e0e0e] min-h-screen text-white pt-28 pb-12 font-sans">
-      <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-12">
-        
-        <div className="lg:col-span-8">
-          <h2 className="text-2xl font-black italic tracking-tighter uppercase mb-8 border-l-4 border-red-600 pl-4">Checkout</h2>
-          
-          <form onSubmit={handlePlaceOrder} className="space-y-8">
-            {/* Shipping Section */}
-            <section className="space-y-4">
-              <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest font-mono">01. Shipping Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input type="text" placeholder="Full Name" required className="bg-[#161616] border border-zinc-800 p-4 text-sm focus:border-red-600 outline-none transition" onChange={(e) => setFormData({...formData, fullName: e.target.value})} />
-                <input type="email" placeholder="Email" required className="bg-[#161616] border border-zinc-800 p-4 text-sm focus:border-red-600 outline-none transition" onChange={(e) => setFormData({...formData, email: e.target.value})} />
-              </div>
-              <input type="text" placeholder="Complete Address" required className="w-full bg-[#161616] border border-zinc-800 p-4 text-sm focus:border-red-600 outline-none transition" onChange={(e) => setFormData({...formData, address: e.target.value})} />
-            </section>
+    <div className="bg-[#0e0e0e] min-h-screen text-white pt-24 px-4 pb-10">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10">
 
-            {/* Payment Selection Section */}
-            <section className="space-y-4">
-              <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest font-mono">02. Payment Method</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[
-                  { id: "cod", label: "Cash on Delivery", icon: <MdOutlineAccountBalanceWallet /> },
-                  { id: "card", label: "Credit / Debit Card", icon: <MdPayment /> },
-                  { id: "upi", label: "UPI (Paytm/GPay)", icon: <MdPayment /> },
-                  { id: "qr", label: "Scan QR Code", icon: <MdQrCodeScanner /> }
-                ].map((method) => (
-                  <label key={method.id} className={`flex items-center gap-4 p-4 border transition cursor-pointer ${paymentMethod === method.id ? 'bg-red-600/10 border-red-600' : 'bg-[#161616] border-zinc-800'}`}>
-                    <input type="radio" name="payment" className="hidden" onChange={() => setPaymentMethod(method.id)} checked={paymentMethod === method.id} />
-                    <span className="text-2xl text-red-600">{method.icon}</span>
-                    <span className="text-xs font-bold uppercase tracking-wider">{method.label}</span>
-                  </label>
-                ))}
-              </div>
+        {/* ================= LEFT SECTION ================= */}
+        <form
+          onSubmit={handlePlaceOrder}
+          className="lg:col-span-7 space-y-5"
+        >
+          <h2 className="text-xl font-bold uppercase tracking-widest">
+            Shipping Address
+          </h2>
 
-              {/* Conditional Payment UI */}
-              <div className="mt-6 p-6 bg-[#111] border border-zinc-800 rounded-sm">
-                
-                {/* UPI UI with "Next" Verification */}
-                {paymentMethod === "upi" && (
-                  <div className="animate-fadeIn space-y-4">
-                    <div className="flex gap-2">
-                      <input 
-                        type="text" 
-                        placeholder="Enter your UPI ID (e.g. user@bank)" 
-                        value={upiIdInput}
-                        onChange={(e) => {
-                          setUpiIdInput(e.target.value);
-                          setIsUpiVerified(false);
-                        }}
-                        disabled={isUpiVerified}
-                        className={`w-full bg-black border p-4 text-sm outline-none transition ${isUpiVerified ? 'border-green-600 text-green-600' : 'border-zinc-800 focus:border-red-600'}`} 
-                      />
-                      {!isUpiVerified && (
-                        <button 
-                          type="button"
-                          onClick={handleUpiVerify}
-                          className="bg-zinc-800 px-6 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-700 transition"
-                        >
-                          {isVerifying ? "Verifying..." : "Verify"}
-                        </button>
-                      )}
-                    </div>
+          <input
+            className="w-full bg-[#161616] border border-zinc-800 p-3 text-sm outline-none"
+            placeholder="Full Name"
+            required
+            onChange={(e) =>
+              setFormData({ ...formData, fullName: e.target.value })
+            }
+          />
 
-                    {isVerifying && (
-                      <div className="flex items-center gap-3 animate-pulse">
-                        <div className="w-3 h-3 bg-red-600 rounded-full animate-ping"></div>
-                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest">Sending request to your UPI App...</p>
-                      </div>
-                    )}
+          <input
+            className="w-full bg-[#161616] border border-zinc-800 p-3 text-sm outline-none"
+            placeholder="Email"
+            required
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+          />
 
-                    {isUpiVerified && (
-                      <p className="text-[10px] text-green-600 font-bold uppercase tracking-widest flex items-center gap-2">
-                        <IoMdCheckmarkCircle /> Request Sent! Approve payment in your app.
-                      </p>
-                    )}
-                  </div>
-                )}
+          <input
+            className="w-full bg-[#161616] border border-zinc-800 p-3 text-sm outline-none"
+            placeholder="Phone Number"
+            required
+            onChange={(e) =>
+              setFormData({ ...formData, phone: e.target.value })
+            }
+          />
 
-                {paymentMethod === "qr" && (
-                  <div className="flex flex-col items-center animate-fadeIn py-4">
-                    <div className="bg-white p-4 rounded-sm shadow-xl">
-                      <QRCode value={upiPaymentLink} size={150} />
-                    </div>
-                    <p className="text-[10px] text-zinc-500 mt-4 uppercase tracking-widest">Scan to pay: <span className="text-white font-bold">{myUpiId}</span></p>
-                  </div>
-                )}
+          <input
+            className="w-full bg-[#161616] border border-zinc-800 p-3 text-sm outline-none"
+            placeholder="House / Street / Area"
+            required
+            onChange={(e) =>
+              setFormData({ ...formData, addressLine: e.target.value })
+            }
+          />
 
-                {paymentMethod === "card" && (
-                   <p className="text-xs text-zinc-400 uppercase tracking-widest text-center py-4 italic">Credit/Debit Card payment portal offline for maintenance</p>
-                )}
+          <div className="grid grid-cols-3 gap-3">
+            <input
+              className="bg-[#161616] border border-zinc-800 p-3 text-sm outline-none"
+              placeholder="City"
+              required
+              onChange={(e) =>
+                setFormData({ ...formData, city: e.target.value })
+              }
+            />
+            <input
+              className="bg-[#161616] border border-zinc-800 p-3 text-sm outline-none"
+              placeholder="State"
+              required
+              onChange={(e) =>
+                setFormData({ ...formData, state: e.target.value })
+              }
+            />
+            <input
+              className="bg-[#161616] border border-zinc-800 p-3 text-sm outline-none"
+              placeholder="Pincode"
+              required
+              onChange={(e) =>
+                setFormData({ ...formData, pincode: e.target.value })
+              }
+            />
+          </div>
 
-                {paymentMethod === "cod" && (
-                  <p className="text-xs text-zinc-400 uppercase tracking-widest text-center py-4 italic">Pay with cash upon delivery</p>
-                )}
-              </div>
-            </section>
+          <h2 className="text-xl font-bold uppercase tracking-widest pt-4">
+            Payment Method
+          </h2>
 
-            {/* Dynamic Button State */}
-            <button 
-              type="submit" 
-              disabled={paymentMethod === 'upi' && !isUpiVerified}
-              className={`w-full font-bold py-5 transition-all uppercase text-xs tracking-[0.2em] shadow-xl mt-8 
-                ${(paymentMethod === 'upi' && !isUpiVerified) 
-                  ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed' 
-                  : 'bg-red-600 hover:bg-red-700 text-white shadow-red-900/10'}`}
-            >
-              {paymentMethod === 'upi' && !isUpiVerified 
-                ? "Verify UPI to Proceed" 
-                : `Complete Purchase (₹${totalAmount.toLocaleString()})`}
-            </button>
-          </form>
-        </div>
+          <select
+            className="w-full bg-[#161616] border border-zinc-800 p-3 text-sm outline-none"
+            value={paymentMethod}
+            onChange={(e) => setPaymentMethod(e.target.value)}
+          >
+            <option value="cod">Cash on Delivery</option>
+            <option value="upi">UPI</option>
+            <option value="qr">QR Code</option>
+          </select>
 
-        {/* Sticky Summary */}
-        <div className="lg:col-span-4">
-          <div className="bg-[#161616] border border-zinc-900 p-8 sticky top-28 shadow-2xl">
-            <h3 className="text-xs font-bold mb-8 border-b border-zinc-800 pb-4 uppercase tracking-widest text-zinc-500">Your Order</h3>
-            <div className="space-y-5 mb-8">
+          {paymentMethod === "upi" && (
+            <div className="flex gap-2">
+              <input
+                className="flex-1 bg-[#161616] border border-zinc-800 p-3 text-sm outline-none"
+                placeholder="Enter UPI ID"
+                onChange={(e) => {
+                  setUpiId(e.target.value);
+                  setUpiVerified(false);
+                }}
+              />
+              <button
+                type="button"
+                onClick={verifyUpi}
+                className="bg-zinc-800 px-5 text-sm font-bold uppercase"
+              >
+                {verifying ? "Verifying..." : "Verify"}
+              </button>
+            </div>
+          )}
+
+          {paymentMethod === "qr" && (
+            <div className="bg-white p-4 inline-block">
+              <QRCode value={upiLink} size={150} />
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={paymentMethod === "upi" && !upiVerified}
+            className="w-full bg-red-600 hover:bg-red-700 py-4 font-bold uppercase tracking-widest"
+          >
+            Place Order ₹{totalAmount}
+          </button>
+        </form>
+
+        {/* ================= RIGHT SECTION ================= */}
+        <div className="lg:col-span-5 bg-[#161616] border border-zinc-800 p-6 sticky top-24 h-fit">
+          <h3 className="text-sm font-bold uppercase tracking-widest mb-6">
+            Order Summary
+          </h3>
+
+          {cart.length === 0 ? (
+            <p className="text-zinc-500 text-sm">Your cart is empty</p>
+          ) : (
+            <div className="space-y-4">
               {cart.map((item) => (
-                <div key={item.id} className="flex justify-between text-[11px] uppercase tracking-wider font-medium">
-                  <span className="text-zinc-500">{item.title} (x{item.quantity})</span>
-                  <span>₹{(item.finalPrice * item.quantity).toLocaleString()}</span>
+                <div
+                  key={item.id}
+                  className="flex gap-4 border-b border-zinc-800 pb-4"
+                >
+                  <img
+                    src={item.images[0]}
+                    alt={item.title}
+                    className="w-16 h-16 bg-white p-2 object-contain"
+                  />
+
+                  <div className="flex-1">
+                    <p className="text-sm font-bold">
+                      {item.brand} {item.title}
+                    </p>
+                    <p className="text-xs text-zinc-500">
+                      Qty: {item.quantity}
+                    </p>
+                  </div>
+
+                  <p className="text-sm font-bold text-red-500">
+                    ₹{item.finalPrice * item.quantity}
+                  </p>
                 </div>
               ))}
             </div>
-            <div className="border-t border-zinc-800 pt-6">
-              <div className="flex justify-between text-2xl font-black italic tracking-tighter">
-                <span className="uppercase">Grand Total</span>
-                <span className="text-red-600">₹{totalAmount.toLocaleString()}</span>
-              </div>
-            </div>
+          )}
+
+          <div className="flex justify-between text-lg font-black mt-6">
+            <span>Total</span>
+            <span className="text-red-500">₹{totalAmount}</span>
           </div>
         </div>
       </div>
