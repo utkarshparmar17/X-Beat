@@ -4,8 +4,6 @@ import { Link } from "react-router-dom";
 import { IoMdCheckmarkCircle } from "react-icons/io";
 import QRCode from "react-qr-code";
 
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db, auth } from "../firebase";
 
 const PlaceOrder = () => {
   const { cart, clearCart } = useProducts();
