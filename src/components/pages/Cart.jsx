@@ -14,12 +14,10 @@ const Cart = () => {
     <div className="bg-[#0e0e0e] min-h-screen text-white pt-20 md:pt-24 px-3 sm:px-4 pb-10">
       <div className="max-w-6xl mx-auto">
 
-        {/* TITLE */}
         <h1 className="text-xl sm:text-2xl md:text-3xl font-black uppercase mb-6 md:mb-8">
           Shopping Cart
         </h1>
 
-        {/* EMPTY CART */}
         {cart.length === 0 ? (
           <div className="text-center py-24">
             <p className="text-zinc-500 mb-6 text-sm sm:text-base">
@@ -36,10 +34,9 @@ const Cart = () => {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
 
-            {/* ================= LEFT: CART ITEMS ================= */}
+            {/* LEFT */}
             <div className="lg:col-span-8 space-y-4 sm:space-y-5">
 
-              {/* ADD MORE PRODUCTS */}
               <Link
                 to="/all-products"
                 className="inline-block text-xs sm:text-sm font-bold uppercase tracking-widest text-red-500 hover:underline"
@@ -54,7 +51,7 @@ const Cart = () => {
                 >
                   {/* IMAGE */}
                   <img
-                    src={item.images[0]}
+                    src={item.images?.[0] || "/gift-card.png"}
                     alt={item.title}
                     className="w-20 h-20 sm:w-24 sm:h-24 bg-white p-2 object-contain mx-auto sm:mx-0"
                   />
@@ -63,13 +60,17 @@ const Cart = () => {
                   <div className="flex-1">
                     <h3 className="font-bold text-sm sm:text-base">
                       {item.brand} {item.title}
+                      {item.type === "giftcard" && (
+                        <span className="ml-2 text-xs text-green-500">
+                          ({item.discountPercent}% OFF)
+                        </span>
+                      )}
                     </h3>
 
                     <p className="text-xs text-zinc-500 mt-1">
                       ₹{item.finalPrice}
                     </p>
 
-                    {/* QUANTITY CONTROLS */}
                     <div className="flex items-center gap-3 mt-4">
                       <button
                         onClick={() =>
@@ -102,15 +103,14 @@ const Cart = () => {
                     </div>
                   </div>
 
-                  {/* PRICE */}
-                  <p className="font-bold text-red-500 text-sm sm:text-base text-right sm:text-left">
+                  <p className="font-bold text-red-500 text-sm sm:text-base">
                     ₹{item.finalPrice * item.quantity}
                   </p>
                 </div>
               ))}
             </div>
 
-            {/* ================= RIGHT: SUMMARY ================= */}
+            {/* RIGHT */}
             <div className="lg:col-span-4 bg-[#161616] border border-zinc-800 p-5 sm:p-6 h-fit lg:sticky lg:top-24">
               <h2 className="text-xs sm:text-sm font-bold uppercase tracking-widest mb-6">
                 Order Summary
@@ -129,6 +129,11 @@ const Cart = () => {
               <Link to="/place-order">
                 <button className="w-full bg-red-600 hover:bg-red-700 py-3 sm:py-4 font-bold uppercase tracking-widest text-xs sm:text-sm">
                   Place Order
+                </button>
+              </Link>
+              <Link to="/gift-cards">
+                <button className="w-full bg-red-600 hover:bg-red-700 py-3 sm:py-4 font-bold uppercase tracking-widest text-xs sm:text-sm mt-3">
+                  Gift Card
                 </button>
               </Link>
             </div>

@@ -18,6 +18,7 @@ import AuthPage from './components/AuthPage.jsx';
 import HelpPage from './components/pages/footer/HelpPage.jsx';
 import PoliciesPage from './components/pages/footer/PoliciesPage.jsx';
 import AboutPage from './components/pages/footer/AboutPage.jsx';
+import GiftCard from './components/pages/GiftCard.jsx';
 
 function App() {
     // 3. Add Sidebar State Logic
@@ -55,6 +56,7 @@ function App() {
                     <Route path="/help" element={<HelpPage />} />
                     <Route path="/policies" element={<PoliciesPage />} />
                     <Route path="/about" element={<AboutPage />} />
+                     <Route path="/gift-cards" element={<GiftCard />} />
                 </Routes>
 
                 <Advantages />
