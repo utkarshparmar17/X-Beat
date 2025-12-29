@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar'; // 2. Ensure Sidebar is imported
 import Home from './components/pages/Home';
-import Search from './components/pages/Search';
 import Cart from './components/pages/Cart';
 import Profile from './components/pages/Profile';
 import FeaturedProducts from './components/pages/FeaturedProducts.jsx';
@@ -26,21 +25,20 @@ function App() {
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
     return (
-        
+
         <ProductProvider>
             <BrowserRouter>
                 <ScrollToTop />
-                
-                
+
+
                 {/* 4. Pass toggleSidebar to Navbar */}
                 <Navbar toggleSidebar={toggleSidebar} />
-                
+
                 {/* 5. Add the Sidebar component here */}
                 <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
                 <Routes>
                     <Route path="/" element={<Home />} />
-                    <Route path="/search" element={<Search />} />
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/profile" element={<Profile />} />
 
@@ -53,7 +51,7 @@ function App() {
 
                     <Route path="/login" element={<AuthPage />} />
                     <Route path="/signup" element={<AuthPage />} />
-                    
+
                     <Route path="/help" element={<HelpPage />} />
                     <Route path="/policies" element={<PoliciesPage />} />
                     <Route path="/about" element={<AboutPage />} />
