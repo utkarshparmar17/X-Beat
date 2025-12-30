@@ -1,69 +1,78 @@
-import React, { useState } from 'react'; // 1. Added useState
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import Sidebar from './components/Sidebar'; // 2. Ensure Sidebar is imported
-import Home from './components/pages/Home';
-import Cart from './components/pages/Cart';
-import Profile from './components/pages/Profile';
-import FeaturedProducts from './components/pages/FeaturedProducts.jsx';
-import TopProducts from './components/pages/TopProducts.jsx';
-import AllProducts from './components/pages/AllProducts.jsx';
-import ProductDetails from './components/pages/ProductDetails.jsx';
-import Footer from './components/pages/Footer.jsx';
-import Advantages from './components/pages/Advantages.jsx';
-import ScrollToTop from './components/ScrollToTop.jsx';
-import { ProductProvider } from './context/ProductContext';
-import PlaceOrder from './components/PlaceOrder.jsx';
-import AuthPage from './components/AuthPage.jsx';
-import HelpPage from './components/pages/footer/HelpPage.jsx';
-import PoliciesPage from './components/pages/footer/PoliciesPage.jsx';
-import AboutPage from './components/pages/footer/AboutPage.jsx';
-import GiftCard from './components/pages/GiftCard.jsx';
+import React, { useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import Navbar from "./components/Navbar";
+import Sidebar from "./components/Sidebar";
+import Home from "./components/pages/Home";
+import Cart from "./components/pages/Cart";
+import Profile from "./components/pages/Profile";
+import FeaturedProducts from "./components/pages/FeaturedProducts";
+import TopProducts from "./components/pages/TopProducts";
+import AllProducts from "./components/pages/AllProducts";
+import ProductDetails from "./components/pages/ProductDetails";
+import Footer from "./components/pages/Footer";
+import Advantages from "./components/pages/Advantages";
+import ScrollToTop from "./components/ScrollToTop";
+import PlaceOrder from "./components/PlaceOrder";
+import AuthPage from "./components/AuthPage";
+import HelpPage from "./components/pages/footer/HelpPage";
+import PoliciesPage from "./components/pages/footer/PoliciesPage";
+import AboutPage from "./components/pages/footer/AboutPage";
+import GiftCard from "./components/pages/GiftCard";
+import Wishlist from "./components/pages/Wishlist";
+
+import { ProductProvider } from "./context/ProductContext";
+import { WishlistProvider } from "./context/WishlistContext";
 
 function App() {
-    // 3. Add Sidebar State Logic
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
-    return (
+  return (
+    <ProductProvider>
+      <WishlistProvider>
+        <BrowserRouter>
+          <ScrollToTop />
 
-        <ProductProvider>
-            <BrowserRouter>
-                <ScrollToTop />
+          <Navbar toggleSidebar={toggleSidebar} />
+          <Sidebar
+            isSidebarOpen={isSidebarOpen}
+            toggleSidebar={toggleSidebar}
+          />
 
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/profile" element={<Profile />} />
 
-                {/* 4. Pass toggleSidebar to Navbar */}
-                <Navbar toggleSidebar={toggleSidebar} />
+            <Route path="/top-deals" element={<TopProducts />} />
+            <Route path="/all-products" element={<AllProducts />} />
+            <Route path="/featured-products" element={<FeaturedProducts />} />
 
-                {/* 5. Add the Sidebar component here */}
-                <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+            <Route
+              path="/product-details/:productId"
+              element={<ProductDetails />}
+            />
+            <Route path="/place-order" element={<PlaceOrder />} />
 
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/cart" element={<Cart />} />
-                    <Route path="/profile" element={<Profile />} />
+            <Route path="/login" element={<AuthPage />} />
+            <Route path="/signup" element={<AuthPage />} />
 
-                    <Route path="/top-deals" element={<TopProducts />} />
-                    <Route path="/all-products" element={<AllProducts />} />
-                    <Route path="/featured-products" element={<FeaturedProducts />} />
+            <Route path="/help" element={<HelpPage />} />
+            <Route path="/policies" element={<PoliciesPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/gift-cards" element={<GiftCard />} />
 
-                    <Route path="/product-details/:productId" element={<ProductDetails />} />
-                    <Route path="/place-order" element={<PlaceOrder />} />
+            {/* ✅ FIXED */}
+            <Route path="/wishlist" element={<Wishlist />} />
+          </Routes>
 
-                    <Route path="/login" element={<AuthPage />} />
-                    <Route path="/signup" element={<AuthPage />} />
-
-                    <Route path="/help" element={<HelpPage />} />
-                    <Route path="/policies" element={<PoliciesPage />} />
-                    <Route path="/about" element={<AboutPage />} />
-                     <Route path="/gift-cards" element={<GiftCard />} />
-                </Routes>
-
-                <Advantages />
-                <Footer />
-            </BrowserRouter>
-        </ProductProvider>
-    );
+          <Advantages />
+          <Footer />
+        </BrowserRouter>
+      </WishlistProvider>
+    </ProductProvider>
+  );
 }
 
 export default App;

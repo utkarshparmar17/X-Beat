@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { IoStar } from "react-icons/io5";
 import { useProducts } from "../../context/ProductContext";
+import { useWishlist } from "../../context/WishlistContext";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
+
 
 /* -------------------- StarRating Component -------------------- */
 const StarRating = ({ rating }) => {
@@ -28,6 +31,13 @@ const ProductCard = ({ product }) => {
     addToCart(product);
     setIsAnimating(true);
   };
+
+  const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
+
+const isInWishlist = wishlist.some(
+  (item) => item.id === product.id
+);
+
 
   return (
     <div className="bg-[#111111] border border-transparent hover:border-red-800 transition-all duration-300 flex flex-col group h-full">
@@ -74,6 +84,18 @@ const ProductCard = ({ product }) => {
         >
           {isAnimating ? "Added" : "Add"}
         </button>
+        <button
+  onClick={() =>
+    isInWishlist
+      ? removeFromWishlist(product.id)
+      : addToWishlist(product)
+  }
+  className="mt-2 w-full border border-red-600 text-red-500 hover:bg-red-600 hover:text-white text-[10px] md:text-xs font-bold uppercase py-2 flex items-center justify-center gap-1 transition"
+>
+  {isInWishlist ? <FaHeart /> : <FaRegHeart />}
+  Wishlist
+</button>
+
       </div>
     </div>
   );

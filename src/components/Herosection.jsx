@@ -58,13 +58,13 @@ function HeroSection() {
             className="flex-shrink-0 w-full h-full relative overflow-hidden px-4"
             style={{ width: `${100 / totalSlides}%` }}
           >
-           
-              <div className="absolute flex justify-center inset-0  pointer-events-none select-none z-0  sm:items-center md:justify-start">
-                <span className="text-[22vw] md:text-[15vw] font-black text-white/[0.07] uppercase leading-none pr-4 md:pr-12  lg:pr-20 ">
-                  {slide.brand}
-                </span>
-              </div>
-           
+
+            <div className="absolute flex items-center  inset-0  pointer-events-none select-none z-0  hidden sm:block">
+              <span className="absolute left-[70%] md:left-[30%] lg:left-[30%] top-1/2 -translate-x-1/2 -translate-y-1/2  text-[16vw] md:text-[12vw]  font-black uppercase  text-white/[0.07]  pointer-events-none select-none  z-0">
+                {slide.brand}
+              </span>
+            </div>
+
             <div className="flex flex-col md:flex-row items-center justify-center md:justify-between h-full max-w-7xl mx-auto px-4 md:px-12 relative z-10">
 
               <div className="w-full md:w-1/2 flex justify-center items-center mb-4 md:mb-0">
@@ -90,7 +90,7 @@ function HeroSection() {
                 <div className="md:ml-auto mt-10">
                   <Link
                     to={`${slide.path}${slide.id}`}
-                    className="font-bold text-white bg-red-600 rounded-sm hover:bg-red-700 uppercase tracking-widest text-[10px] md:text-sm transition-transform active:scale-95 px-4 py-2"
+                    className="font-bold text-white bg-red-600 rounded-sm hover:bg-red-700 uppercase tracking-widest  md:text-sm transition-transform active:scale-95 px-4 py-2 "
                   >
                     Shop Now
                   </Link>

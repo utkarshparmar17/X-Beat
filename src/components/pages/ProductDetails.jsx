@@ -3,6 +3,9 @@ import { useParams } from "react-router-dom";
 import productsData from "../../data/productsData.js";
 import { AiFillStar, AiOutlineUser } from "react-icons/ai";
 import { useProducts } from "../../context/ProductContext";
+import { useWishlist } from "../../context/WishlistContext";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
+
 
 const ProductDetails = () => {
   const { productId } = useParams();
@@ -36,6 +39,13 @@ const ProductDetails = () => {
     { id: 3, name: "Bhavesh Joshi", date: "10 June 2022", rating: 4, comment: "Super amazing product !!!" },
     { id: 4, name: "Anandi Gupta", date: "6 May 2022", rating: 4, comment: "Great NC, sound is a bit flat" },
   ];
+
+  const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
+
+const isInWishlist = wishlist.some(
+  (item) => item.id === product.id
+);
+
 
   return (
     <div className="bg-[#0e0e0e] min-h-screen text-white pt-28 pb-12 font-sans px-4 md:px-10">
@@ -116,6 +126,18 @@ const ProductDetails = () => {
             >
               Add to cart
             </button>
+            <button
+  onClick={() =>
+    isInWishlist
+      ? removeFromWishlist(product.id)
+      : addToWishlist(product)
+  }
+  className="w-full md:w-48 border border-red-600 text-red-500 hover:bg-red-600 hover:text-white font-bold py-3 transition-colors text-sm uppercase tracking-widest flex items-center justify-center gap-2"
+>
+  {isInWishlist ? <FaHeart /> : <FaRegHeart />}
+  {isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+</button>
+
           </div>
         </div>
 
