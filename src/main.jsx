@@ -7,11 +7,11 @@ import { WishlistProvider } from "./context/WishlistContext";
 
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  
     <WishlistProvider>
     <ProductProvider>
       <App />
     </ProductProvider>
     </WishlistProvider>
-  </StrictMode>,
+  
 )

@@ -35,14 +35,14 @@ const ProductCard = ({ product }) => {
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
 
 const isInWishlist = wishlist.some(
-  (item) => item.id === product.id
+  (item) => item._id === product._id
 );
 
 
   return (
     <div className="bg-[#111111] border border-transparent hover:border-red-800 transition-all duration-300 flex flex-col group h-full">
       
-      <Link to={`${product.path}${product.id}`} className="flex-grow">
+      <Link to={`/product-details/${product._id}`} className="flex-grow">
         <div className="bg-[#161616] aspect-square flex items-center justify-center p-2 md:p-8 mb-2 md:mb-4">
           <img
             src={product.images[0]}
@@ -87,7 +87,7 @@ const isInWishlist = wishlist.some(
         <button
   onClick={() =>
     isInWishlist
-      ? removeFromWishlist(product.id)
+      ? removeFromWishlist(product._id)
       : addToWishlist(product)
   }
   className="mt-2 w-full border border-red-600 text-red-500 hover:bg-red-600 hover:text-white text-[10px] md:text-xs font-bold uppercase py-2 flex items-center justify-center gap-1 transition"

@@ -1,0 +1,54 @@
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import api from "../api/api";
+
+function HeroSection() {
+  const [heroSlides, setHeroSlides] = useState([]);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  const totalSlides = heroSlides.length;
+
+  useEffect(() => {
+    const fetchHeroProducts = async () => {
+      try {
+        const res = await api.get("/products");
+        const heroProducts = res.data.filter(
+          (product) => product.tag === "hero-product"
+        );
+        setHeroSlides(heroProducts);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchHeroProducts();
+  }, []);
+
+  const goToPrevious = () => {
+    setCurrentSlideIndex((prev) =>
+      prev === 0 ? totalSlides - 1 : prev - 1
+    );
+  };
+
+  const goToNext = () => {
+    setCurrentSlideIndex((prev) => (prev + 1) % totalSlides);
+  };
+
+  useEffect(() => {
+    if (totalSlides > 0) {
+      const timer = setInterval(goToNext, 5000);
+      return () => clearInterval(timer);
+    }
+  }, [totalSlides]);
+
+  if (totalSlides === 0) return null;
+
+  return (
+    <div className="bg-[#111] text-white relative overflow-hidden w-full pt-16 h-[550px]">
+      {/* your JSX stays EXACTLY the same */}
+    </div>
+  );
+}
+
+export default HeroSection;
