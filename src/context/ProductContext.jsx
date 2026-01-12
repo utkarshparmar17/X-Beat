@@ -1,60 +1,88 @@
-import React, { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState } from "react";
+import productApi from "../api/ProductAPI";
 
-const ProductContext = createContext();
+export const ProductContext = createContext(null);
 
 export const ProductProvider = ({ children }) => {
+  const [loading, setLoading] = useState(false);
+
+  /* ===================== CART ===================== */
   const [cart, setCart] = useState([]);
 
-  // ✅ ADD TO CART WITH SOURCE TRACKING
-  const addToCart = (product, source = "unknown") => {
-    // console.log("ADD TO CART");
-    console.log( product);
-    // console.log("SOURCE FILE:", source);
-
+  // ✅ ADD TO CART (by _id + quantity)
+  const addToCart = (product) => {
     setCart((prev) => {
-      const existingItem = prev.find((item) => item.id === product.id);
+      const existing = prev.find((item) => item._id === product._id);
 
-      if (existingItem) {
+      if (existing) {
         return prev.map((item) =>
-          item.id === product.id
+          item._id === product._id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
 
-      return [
-        ...prev,
-        {
-          ...product,
-          quantity: 1,
-          source, // 🔥 STORE SOURCE
-        },
-      ];
+      return [...prev, { ...product, quantity: 1 }];
     });
   };
 
-  const removeFromCart = (id) => {
-    setCart((prev) => prev.filter((item) => item.id !== id));
-  };
+  // ✅ UPDATE QUANTITY
+  const updateQuantity = (_id, qty) => {
+    if (qty < 1) return;
 
-  const updateQuantity = (id, qty) => {
     setCart((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, quantity: qty } : item
+        item._id === _id ? { ...item, quantity: qty } : item
       )
     );
   };
 
-  const clearCart = () => setCart([]);
+  // ✅ REMOVE FROM CART
+  const removeFromCart = (_id) => {
+    setCart((prev) => prev.filter((item) => item._id !== _id));
+  };
+
+  /* ===================== GENERIC FETCH ===================== */
+  const fetchProducts = async (filters = {}) => {
+    try {
+      setLoading(true);
+      const data = await productApi.getProducts(filters);
+      return data || [];
+    } catch (err) {
+      console.error("Failed to load products", err);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ===================== FETCH BY ID ===================== */
+  const fetchProductById = async (id) => {
+    if (!id) return null;
+    try {
+      setLoading(true);
+      return await productApi.getProductById(id);
+    } catch (err) {
+      console.error("Failed to load product", err);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <ProductContext.Provider
       value={{
+        /* products */
+        fetchProducts,
+        fetchProductById,
+        loading,
+
+        /* cart */
         cart,
         addToCart,
-        removeFromCart,
         updateQuantity,
-        clearCart,
+        removeFromCart,
       }}
     >
       {children}
@@ -62,4 +90,11 @@ export const ProductProvider = ({ children }) => {
   );
 };
 
-export const useProducts = () => useContext(ProductContext);
+/* ===================== CUSTOM HOOK ===================== */
+export const useProducts = () => {
+  const context = useContext(ProductContext);
+  if (!context) {
+    throw new Error("useProducts must be used inside ProductProvider");
+  }
+  return context;
+};

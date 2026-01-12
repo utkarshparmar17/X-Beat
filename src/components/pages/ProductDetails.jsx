@@ -1,111 +1,92 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import ProductAPI from "../../api/ProductAPI"; 
-import { AiFillStar, AiOutlineUser } from "react-icons/ai";
+import ProductAPI from "../../API/ProductAPI";
 import { useProducts } from "../../context/ProductContext";
 import { useWishlist } from "../../context/WishlistContext";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { AiFillStar, AiOutlineUser } from "react-icons/ai";
 
 const ProductDetails = () => {
-  const { productId } = useParams(); // This captures the ObjectID from the URL
+  const { productId } = useParams();
   const { addToCart } = useProducts();
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
-  
+
   const [product, setProduct] = useState(null);
-  const [relatedProducts, setRelatedProducts] = useState([]);
   const [mainImg, setMainImg] = useState("");
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const [activeTab, setActiveTab] = useState("Specifications");
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
+  /* ================= FETCH PRODUCT ================= */
   useEffect(() => {
-    const getDetails = async () => {
-      setIsLoading(true);
-      window.scrollTo(0, 0); // Always scroll to top on new product
-
+    const loadProduct = async () => {
       try {
-        const data = await ProductAPI.getProducts();
-        // MATCHING LOGIC: Use _id and compare as strings
-        const found = data.find((p) => String(p._id) === String(productId));
-        
-        if (found) {
-          setProduct(found);
-          setMainImg(found.images[0]);
-          
-          // Filter related products using _id
-          const related = data
-            .filter((p) => p.category === found.category && p._id !== found._id)
-            .slice(0, 3);
-          setRelatedProducts(related);
-          console.log("ProductDetails API:",found);
-        }
-      } catch (error) {
-        console.error("Error fetching product details:", error);
+        setLoading(true);
+        window.scrollTo(0, 0);
+
+        const productData = await ProductAPI.getProductById(productId);
+        setProduct(productData);
+        setMainImg(productData.images?.[0]);
+
+        const related = await ProductAPI.getProducts({
+          category: productData.category,
+        });
+
+        setRelatedProducts(
+          related.filter((p) => p._id !== productData._id).slice(0, 3)
+        );
+      } catch (err) {
+        console.error(err);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
-    getDetails();
+    loadProduct();
   }, [productId]);
 
-// Inside ProductDetails.jsx
-if (isLoading) {
-  return (
-    <div className="min-h-screen bg-[#0e0e0e] flex flex-col items-center justify-center">
-      {/* Symmetrical Wave Visualizer */}
-      <div className="flex items-center justify-center gap-1.5 h-16">
-        {[...Array(8)].map((_, i) => (
-          <div
-            key={i}
-            className="w-1.5 bg-red-600 rounded-full animate-music-wave"
-            style={{
-              animationDelay: `${i * 0.1}s`,
-            }}
-          ></div>
-        ))}
-      </div>
-      <p className="mt-8 text-zinc-500 text-[10px] uppercase tracking-[0.4em] font-bold">
-        Loading Gear...
-      </p>
-
-      <style jsx>{`
-        @keyframes music-wave {
-          0%, 100% { height: 10px; }
-          50% { height: 50px; }
-        }
-        .animate-music-wave {
-          animation: music-wave 0.8s ease-in-out infinite;
-        }
-      `}</style>
-    </div>
-  );
-}
-
-  if (!product) {
+  if (loading) {
     return (
-      <div className="text-white text-center pt-40 min-h-screen bg-[#0e0e0e]">
-        <h2 className="text-2xl font-bold">Product Not Found</h2>
-        <p className="text-zinc-500 mt-2">The ID "{productId}" does not exist in our database.</p>
-        <Link to="/all-products" className="text-red-500 underline mt-4 inline-block">Back to Shop</Link>
+      <div className="min-h-screen bg-[#0e0e0e] flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-zinc-800 border-t-red-600 rounded-full animate-spin" />
       </div>
     );
   }
 
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-[#0e0e0e] text-white flex items-center justify-center">
+        Product not found
+      </div>
+    );
+  }
+
+  const isInWishlist = wishlist.some((i) => i._id === product._id);
   const savings = product.originalPrice - product.finalPrice;
-  const discountPercentage = Math.round((savings / product.originalPrice) * 100);
-  const isInWishlist = wishlist.some((item) => item._id === product._id);
+  const discount = Math.round((savings / product.originalPrice) * 100);
+
+  /* ================= MOCK REVIEWS ================= */
+  const reviews = [
+    { id: 1, name: "Atharva Kumar", date: "4 Aug 2022", rating: 5, comment: "Sound is awesome and as I expected, love it." },
+    { id: 2, name: "Ritika Sen", date: "15 July 2022", rating: 5, comment: "Very good and awesome product" },
+    { id: 3, name: "Bhavesh Joshi", date: "10 June 2022", rating: 4, comment: "Super amazing product !!!" },
+    { id: 4, name: "Anandi Gupta", date: "6 May 2022", rating: 4, comment: "Great NC, sound is a bit flat" },
+  ];
 
   return (
-    <div className="bg-[#0e0e0e] min-h-screen text-white pt-28 pb-12 px-4 md:px-10">
+    <div className="bg-[#0e0e0e] text-white pt-28 pb-16 px-4 md:px-10">
       <div className="max-w-[1200px] mx-auto">
-        <div className="flex flex-col md:flex-row gap-12">
-          {/* Thumbnails */}
-          <div className="flex md:flex-col gap-4 order-2 md:order-1">
-            {product.images?.map((img, index) => (
-              <div 
-                key={index}
+
+        {/* ================= MAIN SECTION ================= */}
+        <div className="flex flex-col md:flex-row gap-10">
+
+          {/* LEFT – THUMBNAILS */}
+          <div className="hidden md:flex flex-col gap-4">
+            {product.images?.map((img, i) => (
+              <div
+                key={i}
                 onClick={() => setMainImg(img)}
-                className={`w-20 h-20 bg-[#161616] p-2 border-2 cursor-pointer transition-all ${
+                className={`w-20 h-20 p-2 bg-[#161616] border cursor-pointer ${
                   mainImg === img ? "border-red-600" : "border-zinc-800"
                 }`}
               >
@@ -114,54 +95,175 @@ if (isLoading) {
             ))}
           </div>
 
-          {/* Main Image */}
-          <div className="flex-1 bg-[#161616] flex items-center justify-center p-10 order-1 md:order-2 min-h-[400px]">
-            <img src={mainImg} alt={product.title} className="max-w-full max-h-[500px] object-contain" />
+          {/* CENTER – IMAGE */}
+          <div className="flex-1 bg-[#161616] flex items-center justify-center min-h-[400px]">
+            <img src={mainImg} alt={product.title} className="max-h-[450px] object-contain" />
           </div>
 
-          {/* Info Side */}
-          <div className="flex-1 space-y-6 order-3">
-            <header>
-              <h1 className="text-3xl font-bold">{product.brand} {product.title}</h1>
-              <p className="text-zinc-400 mt-2">{product.info}</p>
-            </header>
+          {/* RIGHT – INFO */}
+          <div className="flex-1 space-y-6">
+            <h1 className="text-2xl sm:text-3xl font-bold">
+              {product.brand} {product.title}
+            </h1>
 
-            <div className="flex items-baseline gap-4">
+            <p className="text-zinc-400">{product.info}</p>
+
+            <div className="flex gap-1 text-red-600">
+              {[...Array(5)].map((_, i) => <AiFillStar key={i} />)}
+            </div>
+
+            <div className="flex items-center gap-4">
               <span className="text-3xl font-bold">₹{product.finalPrice.toLocaleString()}</span>
-              <span className="text-lg text-zinc-600 line-through">₹{product.originalPrice.toLocaleString()}</span>
-              <span className="text-green-500 text-sm">{discountPercentage}% OFF</span>
+              <span className="line-through text-zinc-600">₹{product.originalPrice.toLocaleString()}</span>
+              <span className="text-green-500 text-sm">{discount}% OFF</span>
             </div>
 
-            <div className="flex gap-4">
-              <button 
-                onClick={() => addToCart(product)} 
-                className="flex-1 bg-red-600 hover:bg-red-700 py-3 font-bold uppercase text-sm"
-              >
-                Add to cart
-              </button>
-              <button
-                onClick={() => isInWishlist ? removeFromWishlist(product._id) : addToWishlist(product)}
-                className="px-6 border border-zinc-700 hover:bg-zinc-800"
-              >
-                {isInWishlist ? <FaHeart className="text-red-600" /> : <FaRegHeart />}
-              </button>
-            </div>
+            <button
+              onClick={() => addToCart(product)}
+              className="w-full bg-red-600 hover:bg-red-700 py-3 font-bold uppercase"
+            >
+              Add to Cart
+            </button>
+
+            <button
+              onClick={() =>
+                isInWishlist
+                  ? removeFromWishlist(product._id)
+                  : addToWishlist(product)
+              }
+              className="w-full border border-red-600 text-red-500 hover:bg-red-600 hover:text-white py-3 font-bold uppercase flex items-center justify-center gap-2"
+            >
+              {isInWishlist ? <FaHeart /> : <FaRegHeart />}
+              Wishlist
+            </button>
           </div>
         </div>
 
-        {/* Related Products Section */}
-        <div className="mt-32">
-          <h2 className="text-2xl font-bold mb-10 text-center uppercase">Related Products</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {relatedProducts.map((item) => (
-              <Link to={`/product-details/${item._id}`} key={item._id} className="group bg-[#111] p-6 border border-zinc-900 hover:border-red-600 transition-all">
-                <img src={item.images[0]} alt={item.title} className="h-48 mx-auto object-contain group-hover:scale-105 transition-transform" />
-                <h3 className="mt-4 font-bold text-center">{item.title}</h3>
-                <p className="text-red-600 font-bold text-center">₹{item.finalPrice.toLocaleString()}</p>
-              </Link>
+        {/* ================= TABS ================= */}
+        <div className="mt-24">
+
+          {/* TAB BUTTONS */}
+          <div className="flex justify-center gap-4 mb-10 overflow-x-auto no-scrollbar">
+            {["Specifications", "Overview", "Reviews"].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 sm:px-6 py-2 text-xs sm:text-sm font-bold uppercase tracking-widest rounded transition ${
+                  activeTab === tab
+                    ? "bg-red-600 text-white"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                {tab}
+              </button>
             ))}
           </div>
+
+          {/* TAB CONTENT */}
+          <div className="max-w-4xl mx-auto min-h-[300px]">
+
+            {/* ================= SPECIFICATIONS ================= */}
+            {activeTab === "Specifications" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 md:gap-x-24">
+                {[
+                  ["Brand", product.brand],
+                  ["Model", product.title],
+                  ["Generic Name", product.category],
+                  ["Headphone Type", "In Ear"],
+                  ["Connectivity", "Wireless"],
+                  ["Microphone", "Yes"],
+                ].map(([label, value], i) => (
+                  <div
+                    key={i}
+                    className="flex justify-between border-b border-zinc-800 pb-3"
+                  >
+                    <span className="text-zinc-400 text-sm sm:text-base">
+                      {label}
+                    </span>
+                    <span className="text-zinc-200 text-sm sm:text-base font-semibold text-right">
+                      {value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ================= OVERVIEW ================= */}
+            {activeTab === "Overview" && (
+              <div className="space-y-6 text-zinc-400 text-sm">
+                <h3 className="text-lg sm:text-xl">
+                  The{" "}
+                  <span className="text-red-600 font-bold">
+                    {product.brand} {product.title}
+                  </span>{" "}
+                  delivers fabulous sound quality
+                </h3>
+                <ul className="list-disc list-inside space-y-2">
+                  <li>Sound Tuned to Perfection</li>
+                  <li>Comfortable to Wear</li>
+                  <li>Long Hours Playback Time</li>
+                </ul>
+              </div>
+            )}
+
+            {/* ================= REVIEWS ================= */}
+            {activeTab === "Reviews" && (
+              <div className="space-y-10">
+                {reviews.map((rev) => (
+                  <div key={rev.id} className="flex gap-4">
+                    <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center">
+                      <AiOutlineUser className="text-zinc-500 text-xl" />
+                    </div>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h4 className="font-bold">{rev.name}</h4>
+                        <div className="flex text-red-600 text-xs">
+                          {[...Array(5)].map((_, i) => (
+                            <AiFillStar
+                              key={i}
+                              className={i < rev.rating ? "text-red-600" : "text-zinc-800"}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-zinc-500 text-xs">| {rev.date}</span>
+                      </div>
+                      <p className="text-zinc-400 text-sm mt-1">{rev.comment}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* ================= RELATED PRODUCTS ================= */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-32">
+            <h2 className="text-2xl font-bold mb-10 text-center uppercase">
+              Related Products
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {relatedProducts.map((item) => (
+                <Link
+                  key={item._id}
+                  to={`/product-details/${item._id}`}
+                  className="bg-[#111] p-6 border border-zinc-900 hover:border-red-600 transition"
+                >
+                  <img
+                    src={item.images?.[0]}
+                    alt={item.title}
+                    className="h-48 mx-auto object-contain"
+                  />
+                  <h3 className="mt-4 text-center font-bold">{item.title}</h3>
+                  <p className="text-center text-red-600 font-bold mt-1">
+                    ₹{item.finalPrice.toLocaleString()}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,19 +1,32 @@
 import axios from "axios";
+
 const API_URL = "https://app-backend-ruby.vercel.app";
+
 const getProducts = async (filters = {}) => {
   try {
     let query = "";
     if (Object.keys(filters).length > 0) {
-      const queryString = new URLSearchParams(filters).toString();
-      query = `?${queryString}`;
+      query = `?${new URLSearchParams(filters).toString()}`;
     }
-    const response = await axios.get(`${API_URL}/xbeat/products${query}`);
-    return response.data.data; // :white_check_mark: products array
-  } catch (error) {
-    console.warn("error in get products:", error);
+    const res = await axios.get(`${API_URL}/xbeat/products${query}`);
+    return res.data.data;
+  } catch (err) {
+    console.warn("getProducts error:", err);
     return [];
   }
 };
+
+const getProductById = async (id) => {
+  try {
+    const res = await axios.get(`${API_URL}/xbeat/product/${id}`);
+    return res.data.data;
+  } catch (err) {
+    console.warn("getProductById error:", err);
+    return null;
+  }
+};
+
 export default {
   getProducts,
+  getProductById,
 };

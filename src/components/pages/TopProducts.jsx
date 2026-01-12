@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { IoArrowForward, IoStar } from "react-icons/io5";
-import ProductAPI from "../../api/ProductAPI"; 
-import { useProducts } from "../../context/ProductContext";
+import ProductAPI from "../../api/ProductAPI";
 import ProductCard from "./ProductCard.jsx";
 
 const StarRating = ({ rating }) => (
@@ -21,53 +20,56 @@ const StarRating = ({ rating }) => (
 function TopProducts() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [allProducts, setAllProducts] = useState([]);
-  const [isDataLoading, setIsDataLoading] = useState(true); // ✅ Added this state
-  const { addToCart } = useProducts();
+  const [isDataLoading, setIsDataLoading] = useState(true);
 
   const categories = ["All", "Headphones", "Earbuds", "Earphones", "Neckbands"];
 
-  // 1. Fetch products from API on initial mount
+  /* ===================== FETCH TOP PRODUCTS ===================== */
   useEffect(() => {
-    const fetchAll = async () => {
+    const fetchTopProducts = async () => {
       try {
-        setIsDataLoading(true); // Start loading
-        const data = await ProductAPI.getProducts(); 
-        setAllProducts(data);
+        setIsDataLoading(true);
+
+        // ✅ ONLY top products (matches your network tab)
+        const data = await ProductAPI.getProducts({
+          
+        });
+
+        setAllProducts(data || []);
       } catch (err) {
         console.error("TopProducts API error:", err);
       } finally {
-        setIsDataLoading(false); // Stop loading
+        setIsDataLoading(false);
       }
     };
 
-    fetchAll();
+    fetchTopProducts();
   }, []);
 
-  // 2. Log to console whenever category changes or new products arrive
-  useEffect(() => {
-    if (allProducts.length > 0) {
-      const currentFiltered = allProducts.filter(
-        (p) => activeCategory === "All" || p.category === activeCategory
-      );
-      
-      console.log(`--- Category Selected: ${activeCategory} ---`);
-      console.log("Filtered Results:", currentFiltered);
-    }
-  }, [activeCategory, allProducts]);
-
-  // 3. Logic for the UI display
+  /* ===================== FILTER LOGIC (FIXED) ===================== */
   const filteredProducts = allProducts
-    .filter(
-      (p) => activeCategory === "All" || p.category === activeCategory
-    )
+    .filter((p) => {
+      if (activeCategory === "All") return true;
+
+      const apiCategory = p.category?.toLowerCase();
+      const uiCategory = activeCategory.toLowerCase();
+
+      // handles: headphones ↔ headphone, earbuds ↔ earbud
+      return (
+        apiCategory === uiCategory ||
+        apiCategory === uiCategory.slice(0, )
+      );
+    })
     .slice(0, 11);
 
-  // If data is fetching, show the small spinner
+  /* ===================== LOADING UI ===================== */
   if (isDataLoading) {
     return (
       <div className="h-64 flex flex-col items-center justify-center bg-[#111]">
         <div className="w-10 h-10 border-4 border-zinc-800 border-t-red-600 rounded-full animate-spin"></div>
-        <p className="mt-4 text-zinc-500 text-[10px] uppercase tracking-widest">Loading Products...</p>
+        <p className="mt-4 text-zinc-500 text-[10px] uppercase tracking-widest">
+          Loading Products...
+        </p>
       </div>
     );
   }
@@ -101,6 +103,7 @@ function TopProducts() {
           {filteredProducts.map((p) => (
             <ProductCard key={p._id} product={p} />
           ))}
+          
 
           {/* MORE CARD */}
           <Link

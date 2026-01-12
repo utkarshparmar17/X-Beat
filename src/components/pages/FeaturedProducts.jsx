@@ -1,36 +1,42 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay, EffectCoverflow } from "swiper/modules";
 import { Link } from "react-router-dom";
-import ProductAPI from "../../API/ProductAPI";
+import { ProductContext } from "../../context/ProductContext";
 
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/effect-coverflow";
 
 function FeaturedProducts() {
-  const [featured, setFeatured] = useState([]);
+  const { fetchProducts } = useContext(ProductContext);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFeatured = async () => {
+    const loadFeatured = async () => {
       try {
-        const data = await ProductAPI.getProducts();
-        const filtered = data.filter(
-          (p) => p.tag === "featured-product"
-         
-        );
-        console.log("FeaturedProducts API:",filtered);
-        setFeatured(filtered);
+        const data = await fetchProducts({ tag: "featured-product" });
+        setFeaturedProducts(data);
       } catch (err) {
-        console.error("Featured products error:", err);
+        console.error("Failed to load featured products", err);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchFeatured();
+    loadFeatured();
   }, []);
 
-  // If no products, don’t render slider
-  if (featured.length === 0) return null;
+  if (loading) {
+    return (
+      <p className="text-center text-gray-400">
+        Loading Featured Data...
+      </p>
+    );
+  }
+
+  if (featuredProducts.length === 0) return null;
 
   return (
     <div className="bg-[#111] pt-10 pb-20 w-full overflow-hidden featured-swiper-container">
@@ -47,7 +53,7 @@ function FeaturedProducts() {
           breakpoints={{
             1024: { slidesPerView: 3 },
           }}
-          loop={featured.length > 3}
+          loop={featuredProducts.length > 3}
           coverflowEffect={{
             rotate: 0,
             stretch: 0,
@@ -59,7 +65,7 @@ function FeaturedProducts() {
           autoplay={{ delay: 2500, disableOnInteraction: false }}
           className="featured-swiper"
         >
-          {featured.map((product) => (
+          {featuredProducts.map((product) => (
             <SwiperSlide key={product._id} className="featured-slide group">
               <Link to={`/product-details/${product._id}`}>
                 <div className="product-card flex flex-col items-center justify-center py-5 pb-14 transform transition-transform duration-300 ease-in-out group-hover:scale-110">

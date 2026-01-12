@@ -1,31 +1,30 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
-import ProductAPI from "../API/ProductAPI"; // ✅ adjust if needed
+import { ProductContext } from "../context/ProductContext";
 
 function HeroSection() {
   const [heroSlides, setHeroSlides] = useState([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+    const { fetchProducts } = useContext(ProductContext);
+  
 
   const totalSlides = heroSlides.length;
 
-  // ✅ FETCH HERO PRODUCTS
   useEffect(() => {
-    const fetchHeroProducts = async () => {
-      try {
-        const data = await ProductAPI.getProducts();
-        const filtered = data.filter(
-          (product) => product.tag === "hero-product"
-        );
-        console.log("Hero products:", filtered);
-        setHeroSlides(filtered);
-      } catch (err) {
-        console.error("Hero API error:", err);
-      }
-    };
+  const loadHero = async () => {
+    try {
+      const data = await fetchProducts({ tag: "hero-product" });
+      setHeroSlides(data);
+    } catch (err) {
+      console.error("Failed to load hero products", err);
+    }
+  };
 
-    fetchHeroProducts();
-  }, []);
+  loadHero();
+}, []);
+
 
   // ✅ SLIDE CONTROLS
   const goToPrevious = () => {
