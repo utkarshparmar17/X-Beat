@@ -4,6 +4,7 @@ import { GrUserManager } from "react-icons/gr";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import SearchOverlay from "../common/SearchOverlay";
+import Tooltip from "../common/Tooltip";
 import ProductAPI from "../../api/ProductAPI"; // ✅ FIXED PATH
 
 function Navbar({ toggleSidebar }) {
@@ -113,12 +114,14 @@ function Navbar({ toggleSidebar }) {
                   />
                 )}
 
-                <button
-                  onClick={() => setOpenSearch((s) => !s)}
-                  className="hover:text-red-500 p-1"
-                >
-                  <IoSearchSharp />
-                </button>
+                <Tooltip text="Search">
+                  <button
+                    onClick={() => setOpenSearch((s) => !s)}
+                    className="hover:text-red-500 p-1"
+                  >
+                    <IoSearchSharp />
+                  </button>
+                </Tooltip>
 
                 {openSearch && q && (
                   <div className="absolute right-9 top-full mt-2 w-[320px] bg-[#111] border border-zinc-800 rounded-md shadow-lg z-50">
@@ -164,24 +167,28 @@ function Navbar({ toggleSidebar }) {
             </div>
 
             {/* CART */}
-            <Link to="/cart" className="relative hover:text-red-500">
-              <IoCartOutline />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-600 text-[10px]
-                  w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                  {cartItemCount}
-                </span>
-              )}
-            </Link>
+            <Tooltip text="Cart">
+              <Link to="/cart" className="relative hover:text-red-500 block">
+                <IoCartOutline />
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-[10px]
+                    w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                    {cartItemCount}
+                  </span>
+                )}
+              </Link>
+            </Tooltip>
 
             {/* USER */}
             <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setShowDropdown(!showDropdown)}
-                className="hover:text-red-500 transition p-1"
-              >
-                <GrUserManager />
-              </button>
+              <Tooltip text="Profile">
+                <button
+                  onClick={() => setShowDropdown(!showDropdown)}
+                  className="hover:text-red-500 transition p-1"
+                >
+                  <GrUserManager />
+                </button>
+              </Tooltip>
 
               {showDropdown && (
                 <div className="absolute right-0 top-full mt-3 w-72 bg-[#111] border border-zinc-800 shadow-2xl z-50 rounded-sm overflow-hidden">
