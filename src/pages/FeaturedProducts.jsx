@@ -1,22 +1,21 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay, EffectCoverflow } from "swiper/modules";
 import { Link } from "react-router-dom";
-import { ProductContext } from "../../context/ProductContext";
+import ProductAPI from "../api/ProductAPI";
 
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/effect-coverflow";
 
 function FeaturedProducts() {
-  const { fetchProducts } = useContext(ProductContext);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadFeatured = async () => {
       try {
-        const data = await fetchProducts({ tag: "featured-product" });
+        const data = await ProductAPI.getProducts({ tag: "featured-product" });
         setFeaturedProducts(data);
       } catch (err) {
         console.error("Failed to load featured products", err);

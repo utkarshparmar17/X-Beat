@@ -2,12 +2,12 @@ import React, { useState, useRef, useEffect } from "react";
 import { IoSearchSharp, IoCartOutline, IoMenu } from "react-icons/io5";
 import { GrUserManager } from "react-icons/gr";
 import { Link } from "react-router-dom";
-import { useProducts } from "../context/ProductContext";
-import SearchOverlay from "../components/pages/SearchOverlay";
-import ProductAPI from "../api/ProductAPI"; // ✅ FIXED PATH
+import { useSelector } from "react-redux";
+import SearchOverlay from "../common/SearchOverlay";
+import ProductAPI from "../../api/ProductAPI"; // ✅ FIXED PATH
 
 function Navbar({ toggleSidebar }) {
-  const { cart } = useProducts();
+  const cart = useSelector((state) => state.cart.cart);
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [openSearch, setOpenSearch] = useState(false);
@@ -126,7 +126,7 @@ function Navbar({ toggleSidebar }) {
                       liveResults.map((p) => (
                         <Link
                           key={p._id} // ✅ unique key
-                          to={`/product-details/${p.id}`} // ✅ FIXED ROUTE
+                          to={`/product-details/${p._id}`} // ✅ FIXED ROUTE
                           onClick={() => {
                             setOpenSearch(false);
                             setSearchQuery("");
@@ -184,10 +184,41 @@ function Navbar({ toggleSidebar }) {
               </button>
 
               {showDropdown && (
-                <div className="absolute right-0 mt-3 w-64 bg-[#111] border border-zinc-700 shadow-xl p-5">
-                  <Link to="/login" onClick={() => setShowDropdown(false)}>
-                    Login / Signup
-                  </Link>
+                <div className="absolute right-0 top-full mt-3 w-72 bg-[#111] border border-zinc-800 shadow-2xl z-50 rounded-sm overflow-hidden">
+                  
+                  {/* HEADER */}
+                  <div className="p-6 border-b border-zinc-800">
+                    <h3 className="text-base font-bold text-white mb-1">Hello!</h3>
+                    <p className="text-xs text-zinc-500 mb-4">Access account and manage orders</p>
+                    
+                    <Link 
+                      to="/login"
+                      onClick={() => setShowDropdown(false)}
+                      className="block w-fit px-5 py-2 border border-zinc-600 text-sm font-bold text-white uppercase hover:border-red-600 hover:text-red-500 transition-colors"
+                    >
+                      Login / Signup
+                    </Link>
+                  </div>
+
+                  {/* MENU LINKS */}
+                  <div className="py-2">
+                    {[
+                      { label: "Orders", path: "/orders" },
+                      { label: "Wishlist", path: "/wishlist" },
+                      { label: "Gift Cards", path: "/gift-cards" },
+                      { label: "Saved Cards", path: "/profile" },
+                      { label: "Saved Addresses", path: "/profile" },
+                    ].map((item) => (
+                      <Link
+                        key={item.label}
+                        to={item.path}
+                        onClick={() => setShowDropdown(false)}
+                        className="block px-6 py-2.5 text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

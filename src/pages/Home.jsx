@@ -1,5 +1,4 @@
-//  import HeroSection from "../Herosection"
-import HeroSection from "../Herosection"
+import HeroSection from "../components/home/HeroSection"
 import FeaturedProducts from "./FeaturedProducts"
 import TopProducts from "./TopProducts"
 

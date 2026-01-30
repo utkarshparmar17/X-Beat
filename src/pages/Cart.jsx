@@ -1,11 +1,13 @@
 import { useEffect } from "react";
-import { useProducts } from "../../context/ProductContext";
-import ProductAPI from "../../api/ProductAPI";
+import { useSelector, useDispatch } from "react-redux";
+import { updateQuantity, removeFromCart } from "../redux/slices/cartSlice";
+import ProductAPI from "../api/ProductAPI";
 import { AiOutlineDelete, AiOutlinePlus, AiOutlineMinus } from "react-icons/ai";
 import { Link } from "react-router-dom";
 
 const Cart = () => {
-  const { cart, updateQuantity, removeFromCart } = useProducts();
+  const dispatch = useDispatch();
+  const cart = useSelector((state) => state.cart.cart);
 
   /* ================= FORCE OBJECT ID CALLS ================= */
   useEffect(() => {
@@ -62,7 +64,7 @@ const Cart = () => {
                     <div className="flex items-center gap-3 mt-4">
                       <button
                         onClick={() =>
-                          updateQuantity(item._id, item.quantity - 1)
+                          dispatch(updateQuantity({ _id: item._id, quantity: item.quantity - 1 }))
                         }
                         className="border p-2"
                       >
@@ -73,7 +75,7 @@ const Cart = () => {
 
                       <button
                         onClick={() =>
-                          updateQuantity(item._id, item.quantity + 1)
+                          dispatch(updateQuantity({ _id: item._id, quantity: item.quantity + 1 }))
                         }
                         className="border p-2"
                       >
@@ -81,7 +83,7 @@ const Cart = () => {
                       </button>
 
                       <button
-                        onClick={() => removeFromCart(item._id)}
+                        onClick={() => dispatch(removeFromCart(item._id))}
                         className="ml-4 text-red-500"
                       >
                         <AiOutlineDelete />
@@ -103,9 +105,9 @@ const Cart = () => {
                 <span>Total</span>
                 <span className="text-red-500 font-bold">₹{subtotal}</span>
               </div>
-              <button className="w-full bg-red-600 py-3 font-bold uppercase">
+              <Link to="/place-order" className="block w-full text-center bg-red-600 py-3 font-bold uppercase hover:bg-red-700 transition">
                 Place Order
-              </button>
+              </Link>
             </div>
 
           </div>

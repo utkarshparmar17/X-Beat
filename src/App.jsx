@@ -2,104 +2,135 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // Components
-import Navbar from "./components/Navbar";
-import Sidebar from "./components/Sidebar";
-import Preloader from "./components/Preloader"; // ✅ Import the Preloader
-import ScrollToTop from "./components/ScrollToTop";
-import PlaceOrder from "./components/PlaceOrder";
-import AuthPage from "./components/AuthPage";
-import Footer from "./components/pages/Footer";
-import Advantages from "./components/pages/Advantages";
+import Navbar from "./components/layout/Navbar";
+import Sidebar from "./components/layout/Sidebar";
+import Preloader from "./components/common/PreLoader";
+import ScrollToTop from "./components/common/ScrollToTop";
+import Footer from "./components/layout/Footer";
+import Advantages from "./components/product/Advantages";
 
 // Pages
-import Home from "./components/pages/Home";
-import Cart from "./components/pages/Cart";
-import Profile from "./components/pages/Profile";
-import FeaturedProducts from "./components/pages/FeaturedProducts";
-import TopProducts from "./components/pages/TopProducts";
-import AllProducts from "./components/pages/AllProducts";
-import ProductDetails from "./components/pages/ProductDetails";
-import HelpPage from "./components/pages/footer/HelpPage";
-import PoliciesPage from "./components/pages/footer/PoliciesPage";
-import AboutPage from "./components/pages/footer/AboutPage";
-import GiftCard from "./components/pages/GiftCard";
-import Wishlist from "./components/pages/Wishlist";
+import Home from "./pages/Home";
+import Cart from "./pages/Cart";
+import Profile from "./pages/Profile";
+import FeaturedProducts from "./pages/FeaturedProducts";
+import TopProducts from "./pages/TopProducts";
+import AllProducts from "./pages/AllProducts";
+import ProductDetails from "./pages/ProductDetails";
+import PlaceOrder from "./pages/PlaceOrder";
+import AuthPage from "./pages/AuthPage";
+import GiftCard from "./pages/GiftCard";
+import Wishlist from "./pages/Wishlist";
+import Orders from "./pages/Orders";
+
+// Help Pages
+import FAQs from "./pages/footer/FAQs";
+import TrackOrder from "./pages/footer/TrackOrder";
+import CancelOrder from "./pages/footer/CancelOrder";
+import ReturnOrder from "./pages/footer/ReturnOrder";
+import WarrantyInfo from "./pages/footer/WarrantyInfo";
+
+// Policy Pages
+import ReturnPolicy from "./pages/footer/ReturnPolicy";
+import Security from "./pages/footer/Security";
+import Sitemap from "./pages/footer/Sitemap";
+import PrivacyPolicy from "./pages/footer/PrivacyPolicy";
+import TermsConditions from "./pages/footer/TermsConditions";
+
+// Company Pages
+import AboutUs from "./pages/footer/AboutUs";
+import ContactUs from "./pages/footer/ContactUs";
+import ServiceCentres from "./pages/footer/ServiceCentres";
+import Careers from "./pages/footer/Careers";
+import Affiliates from "./pages/footer/Affiliates";
 
 // Context
-import { ProductProvider } from "./context/ProductContext";
-import { WishlistProvider } from "./context/WishlistContext";
+// Context
+// (Removed Context Providers)
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [appLoading, setAppLoading] = useState(true); // ✅ Loading state
+  const [appLoading, setAppLoading] = useState(true);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
-// Inside App.js
-useEffect(() => {
-  // 1. Check if the user is currently on a Product Details page
-  const isProductDetailsPage = window.location.pathname.startsWith("/product-details");
+  useEffect(() => {
+    const isProductDetailsPage = window.location.pathname.startsWith("/product-details");
 
-  if (isProductDetailsPage) {
-    // 2. If it's the product page, disable the splash screen immediately
-    setAppLoading(false);
-  } else {
-    // 3. For all other pages (Home, etc.), show the splash screen for 2 seconds
-    const timer = setTimeout(() => {
+    if (isProductDetailsPage) {
       setAppLoading(false);
-    }, 2000);
+    } else {
+      const timer = setTimeout(() => {
+        setAppLoading(false);
+      }, 2000);
 
-    return () => clearTimeout(timer);
-  }
-}, []);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   if (appLoading) {
     return <Preloader />;
   }
 
   return (
-    <ProductProvider>
-      <WishlistProvider>
-        <BrowserRouter>
-          <ScrollToTop />
+    <BrowserRouter>
+      <ScrollToTop />
 
-          <Navbar toggleSidebar={toggleSidebar} />
-          <Sidebar
-            isSidebarOpen={isSidebarOpen}
-            toggleSidebar={toggleSidebar}
-          />
+      <Navbar toggleSidebar={toggleSidebar} />
+      <Sidebar
+        isSidebarOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
+      />
 
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/profile" element={<Profile />} />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/profile" element={<Profile />} />
 
-            <Route path="/top-deals" element={<TopProducts />} />
-            <Route path="/all-products" element={<AllProducts />} />
-            <Route path="/featured-products" element={<FeaturedProducts />} />
+        <Route path="/top-deals" element={<TopProducts />} />
+        <Route path="/all-products" element={<AllProducts />} />
+        <Route path="/featured-products" element={<FeaturedProducts />} />
 
-            <Route
-              path="/product-details/:productId"
-              element={<ProductDetails />}
-            />
-            <Route path="/place-order" element={<PlaceOrder />} />
+        <Route
+          path="/product-details/:productId"
+          element={<ProductDetails />}
+        />
+        <Route path="/place-order" element={<PlaceOrder />} />
 
-            <Route path="/login" element={<AuthPage />} />
-            <Route path="/signup" element={<AuthPage />} />
+        <Route path="/login" element={<AuthPage />} />
+        <Route path="/signup" element={<AuthPage />} />
 
-            <Route path="/help" element={<HelpPage />} />
-            <Route path="/policies" element={<PoliciesPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/gift-cards" element={<GiftCard />} />
+        {/* Help Routes */}
+        <Route path="/faqs" element={<FAQs />} />
+        <Route path="/track-order" element={<TrackOrder />} />
+        <Route path="/cancel-order" element={<CancelOrder />} />
+        <Route path="/return-order" element={<ReturnOrder />} />
+        <Route path="/warranty-info" element={<WarrantyInfo />} />
 
-            <Route path="/wishlist" element={<Wishlist />} />
-          </Routes>
+        {/* Policy Routes */}
+        <Route path="/return-policy" element={<ReturnPolicy />} />
+        <Route path="/security" element={<Security />} />
+        <Route path="/sitemap" element={<Sitemap />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-conditions" element={<TermsConditions />} />
 
-          <Advantages />
-          <Footer />
-        </BrowserRouter>
-      </WishlistProvider>
-    </ProductProvider>
+        {/* Company Routes */}
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/contact" element={<ContactUs />} />
+        <Route path="/service-centers" element={<ServiceCentres />} />
+        <Route path="/careers" element={<Careers />} />
+        <Route path="/affiliates" element={<Affiliates />} />
+
+        <Route path="/gift-cards" element={<GiftCard />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+
+        {/* Fallback for Help/Policies/About generic paths if still needed, or remove if fully replaced */}
+        {/* Keeping references to specific pages to avoid breaks if old links exist */}
+      </Routes>
+
+      <Advantages />
+      <Footer />
+    </BrowserRouter>
   );
 }
 

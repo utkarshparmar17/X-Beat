@@ -1,12 +1,14 @@
 import React, { useState } from "react";
-import { useProducts } from "../context/ProductContext";
+import { useSelector, useDispatch } from "react-redux";
+import { clearCart } from "../redux/slices/cartSlice";
 import { Link } from "react-router-dom";
 import { IoMdCheckmarkCircle } from "react-icons/io";
 import QRCode from "react-qr-code";
 
 
 const PlaceOrder = () => {
-  const { cart, clearCart } = useProducts();
+  const dispatch = useDispatch();
+  const cart = useSelector((state) => state.cart.cart);
 
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("cod");
@@ -58,23 +60,13 @@ const PlaceOrder = () => {
     console.log("PRODUCT DETAILS:", cart);
     console.log("CUSTOMER ADDRESS:", formData);
 
-    try {
-      await addDoc(collection(db, "orders"), {
-        userId: auth.currentUser ? auth.currentUser.uid : "guest",
-        items: cart,
-        amount: totalAmount,
-        paymentMethod,
-        status: paymentMethod === "cod" ? "Confirmed" : "Payment Pending",
-        upiHandle: paymentMethod === "upi" ? upiId : null,
-        address: { ...formData },
-        createdAt: serverTimestamp(),
-      });
 
-      clearCart();
-      setOrderPlaced(true);
-    } catch (err) {
-      alert("Order failed");
-    }
+    // Simulate network delay
+    setTimeout(() => {
+        console.log("Mock Order Submitted Successfully");
+        dispatch(clearCart());
+        setOrderPlaced(true);
+    }, 1500);
   };
 
   // ✅ SUCCESS SCREEN

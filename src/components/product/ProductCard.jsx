@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { IoStar } from "react-icons/io5";
-import { useProducts } from "../../context/ProductContext";
-import { useWishlist } from "../../context/WishlistContext";
+import { useSelector, useDispatch } from "react-redux";
+import { addToCart } from "../../redux/slices/cartSlice";
+import { addToWishlist, removeFromWishlist } from "../../redux/slices/wishlistSlice";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 
@@ -25,18 +26,17 @@ const StarRating = ({ rating }) => {
 /* -------------------- ProductCard Component -------------------- */
 const ProductCard = ({ product }) => {
   const [isAnimating, setIsAnimating] = useState(false);
-  const { addToCart } = useProducts();
+  const dispatch = useDispatch();
+  const wishlist = useSelector((state) => state.wishlist.wishlist);
 
   const handleAddToCart = () => {
-    addToCart(product);
+    dispatch(addToCart(product));
     setIsAnimating(true);
   };
 
-  const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
-
-const isInWishlist = wishlist.some(
-  (item) => item._id === product._id
-);
+  const isInWishlist = wishlist.some(
+    (item) => item._id === product._id
+  );
 
 
   return (
@@ -87,8 +87,8 @@ const isInWishlist = wishlist.some(
         <button
   onClick={() =>
     isInWishlist
-      ? removeFromWishlist(product._id)
-      : addToWishlist(product)
+      ? dispatch(removeFromWishlist(product._id))
+      : dispatch(addToWishlist(product))
   }
   className="mt-2 w-full border border-red-600 text-red-500 hover:bg-red-600 hover:text-white text-[10px] md:text-xs font-bold uppercase py-2 flex items-center justify-center gap-1 transition"
 >

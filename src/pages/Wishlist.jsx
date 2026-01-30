@@ -1,8 +1,10 @@
-import { useWishlist } from "../../context/WishlistContext";
+import { useSelector, useDispatch } from "react-redux";
+import { removeFromWishlist } from "../redux/slices/wishlistSlice";
 import { Link } from "react-router-dom";
 
 const Wishlist = () => {
-  const { wishlist, removeFromWishlist } = useWishlist();
+  const dispatch = useDispatch();
+  const wishlist = useSelector((state) => state.wishlist.wishlist);
 
   return (
     <div className="min-h-screen bg-[#0e0e0e] text-white pt-24 px-6">
@@ -33,7 +35,7 @@ const Wishlist = () => {
                   View
                 </Link>
                 <button
-                  onClick={() => removeFromWishlist(product.id)}
+                  onClick={() => dispatch(removeFromWishlist(product._id))}
                   className="text-sm text-red-500"
                 >
                   Remove

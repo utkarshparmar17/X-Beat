@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { IoArrowForward, IoStar } from "react-icons/io5";
-import ProductAPI from "../../api/ProductAPI";
-import ProductCard from "./ProductCard.jsx";
+import ProductAPI from "../api/ProductAPI";
+import ProductCard from "../components/product/ProductCard.jsx";
 
 const StarRating = ({ rating }) => (
   <div className="flex justify-start gap-0.5 mb-1 md:mb-2">

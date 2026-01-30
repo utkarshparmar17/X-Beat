@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import ProductAPI from "../../API/ProductAPI";
-import { useProducts } from "../../context/ProductContext";
-import { useWishlist } from "../../context/WishlistContext";
+import { useSelector, useDispatch } from "react-redux";
+import { addToCart } from "../redux/slices/cartSlice";
+import { addToWishlist, removeFromWishlist } from "../redux/slices/wishlistSlice";
+import ProductAPI from "../api/ProductAPI";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { AiFillStar, AiOutlineUser } from "react-icons/ai";
 
 const ProductDetails = () => {
-  const { productId } = useParams();
-  const { addToCart } = useProducts();
-  const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { productId } = useParams(); // ✅ MongoDB ObjectId
+  const dispatch = useDispatch();
+  const wishlist = useSelector((state) => state.wishlist.wishlist);
 
   const [product, setProduct] = useState(null);
   const [mainImg, setMainImg] = useState("");
@@ -17,17 +18,21 @@ const ProductDetails = () => {
   const [activeTab, setActiveTab] = useState("Specifications");
   const [loading, setLoading] = useState(true);
 
-  /* ================= FETCH PRODUCT ================= */
+  /* ================= FETCH PRODUCT BY OBJECT ID ================= */
   useEffect(() => {
     const loadProduct = async () => {
       try {
         setLoading(true);
         window.scrollTo(0, 0);
 
+        // 1️⃣ Fetch product by ObjectId
         const productData = await ProductAPI.getProductById(productId);
+        if (!productData) return;
+
         setProduct(productData);
         setMainImg(productData.images?.[0]);
 
+        // 2️⃣ Fetch related by category
         const related = await ProductAPI.getProducts({
           category: productData.category,
         });
@@ -36,7 +41,7 @@ const ProductDetails = () => {
           related.filter((p) => p._id !== productData._id).slice(0, 3)
         );
       } catch (err) {
-        console.error(err);
+        console.error("Product details error:", err);
       } finally {
         setLoading(false);
       }
@@ -96,8 +101,8 @@ const ProductDetails = () => {
           </div>
 
           {/* CENTER – IMAGE */}
-          <div className="flex-1 bg-[#161616] flex items-center justify-center min-h-[400px]">
-            <img src={mainImg} alt={product.title} className="max-h-[450px] object-contain" />
+          <div className="flex-1 bg-[#161616] flex items-center justify-center min-h-[420px]">
+            <img src={mainImg} alt={product.title} className="max-h-[480px] object-contain" />
           </div>
 
           {/* RIGHT – INFO */}
@@ -108,18 +113,18 @@ const ProductDetails = () => {
 
             <p className="text-zinc-400">{product.info}</p>
 
-            <div className="flex gap-1 text-red-600">
+            <div className="flex text-red-600">
               {[...Array(5)].map((_, i) => <AiFillStar key={i} />)}
             </div>
 
             <div className="flex items-center gap-4">
-              <span className="text-3xl font-bold">₹{product.finalPrice.toLocaleString()}</span>
-              <span className="line-through text-zinc-600">₹{product.originalPrice.toLocaleString()}</span>
+              <span className="text-3xl font-bold">₹{product.finalPrice}</span>
+              <span className="line-through text-zinc-600">₹{product.originalPrice}</span>
               <span className="text-green-500 text-sm">{discount}% OFF</span>
             </div>
 
             <button
-              onClick={() => addToCart(product)}
+              onClick={() => dispatch(addToCart(product))}
               className="w-full bg-red-600 hover:bg-red-700 py-3 font-bold uppercase"
             >
               Add to Cart
@@ -128,8 +133,8 @@ const ProductDetails = () => {
             <button
               onClick={() =>
                 isInWishlist
-                  ? removeFromWishlist(product._id)
-                  : addToWishlist(product)
+                  ? dispatch(removeFromWishlist(product._id))
+                  : dispatch(addToWishlist(product))
               }
               className="w-full border border-red-600 text-red-500 hover:bg-red-600 hover:text-white py-3 font-bold uppercase flex items-center justify-center gap-2"
             >
@@ -143,12 +148,12 @@ const ProductDetails = () => {
         <div className="mt-24">
 
           {/* TAB BUTTONS */}
-          <div className="flex justify-center gap-4 mb-10 overflow-x-auto no-scrollbar">
+          <div className="flex justify-center gap-4 mb-10 overflow-x-auto">
             {["Specifications", "Overview", "Reviews"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 sm:px-6 py-2 text-xs sm:text-sm font-bold uppercase tracking-widest rounded transition ${
+                className={`px-5 py-2 text-xs sm:text-sm font-bold uppercase tracking-widest rounded ${
                   activeTab === tab
                     ? "bg-red-600 text-white"
                     : "text-zinc-400 hover:text-white"
@@ -160,43 +165,32 @@ const ProductDetails = () => {
           </div>
 
           {/* TAB CONTENT */}
-          <div className="max-w-4xl mx-auto min-h-[300px]">
+          <div className="max-w-4xl mx-auto">
 
-            {/* ================= SPECIFICATIONS ================= */}
+            {/* SPECIFICATIONS */}
             {activeTab === "Specifications" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 md:gap-x-24">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
                 {[
                   ["Brand", product.brand],
                   ["Model", product.title],
-                  ["Generic Name", product.category],
+                  ["Category", product.category],
                   ["Headphone Type", "In Ear"],
                   ["Connectivity", "Wireless"],
                   ["Microphone", "Yes"],
                 ].map(([label, value], i) => (
-                  <div
-                    key={i}
-                    className="flex justify-between border-b border-zinc-800 pb-3"
-                  >
-                    <span className="text-zinc-400 text-sm sm:text-base">
-                      {label}
-                    </span>
-                    <span className="text-zinc-200 text-sm sm:text-base font-semibold text-right">
-                      {value}
-                    </span>
+                  <div key={i} className="flex justify-between border-b border-zinc-800 pb-2">
+                    <span className="text-zinc-400">{label}</span>
+                    <span className="font-medium">{value}</span>
                   </div>
                 ))}
               </div>
             )}
 
-            {/* ================= OVERVIEW ================= */}
+            {/* OVERVIEW */}
             {activeTab === "Overview" && (
-              <div className="space-y-6 text-zinc-400 text-sm">
-                <h3 className="text-lg sm:text-xl">
-                  The{" "}
-                  <span className="text-red-600 font-bold">
-                    {product.brand} {product.title}
-                  </span>{" "}
-                  delivers fabulous sound quality
+              <div className="space-y-5 text-zinc-400 text-sm">
+                <h3 className="text-lg font-medium">
+                  The <span className="text-red-600 font-bold">{product.brand} {product.title}</span> delivers fabulous sound quality
                 </h3>
                 <ul className="list-disc list-inside space-y-2">
                   <li>Sound Tuned to Perfection</li>
@@ -206,33 +200,31 @@ const ProductDetails = () => {
               </div>
             )}
 
-            {/* ================= REVIEWS ================= */}
+            {/* REVIEWS */}
             {activeTab === "Reviews" && (
-              <div className="space-y-10">
-                {reviews.map((rev) => (
-                  <div key={rev.id} className="flex gap-4">
-                    <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center">
-                      <AiOutlineUser className="text-zinc-500 text-xl" />
+              <div className="space-y-8">
+                {reviews.map((r) => (
+                  <div key={r.id} className="flex gap-4">
+                    <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center">
+                      <AiOutlineUser />
                     </div>
                     <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h4 className="font-bold">{rev.name}</h4>
+                      <div className="flex items-center gap-3">
+                        <h4 className="font-bold">{r.name}</h4>
                         <div className="flex text-red-600 text-xs">
                           {[...Array(5)].map((_, i) => (
-                            <AiFillStar
-                              key={i}
-                              className={i < rev.rating ? "text-red-600" : "text-zinc-800"}
-                            />
+                            <AiFillStar key={i} className={i < r.rating ? "text-red-600" : "text-zinc-800"} />
                           ))}
                         </div>
-                        <span className="text-zinc-500 text-xs">| {rev.date}</span>
+                        <span className="text-xs text-zinc-500">{r.date}</span>
                       </div>
-                      <p className="text-zinc-400 text-sm mt-1">{rev.comment}</p>
+                      <p className="text-zinc-400 text-sm mt-1">{r.comment}</p>
                     </div>
                   </div>
                 ))}
               </div>
             )}
+
           </div>
         </div>
 
@@ -250,20 +242,17 @@ const ProductDetails = () => {
                   to={`/product-details/${item._id}`}
                   className="bg-[#111] p-6 border border-zinc-900 hover:border-red-600 transition"
                 >
-                  <img
-                    src={item.images?.[0]}
-                    alt={item.title}
-                    className="h-48 mx-auto object-contain"
-                  />
+                  <img src={item.images?.[0]} alt={item.title} className="h-48 mx-auto object-contain" />
                   <h3 className="mt-4 text-center font-bold">{item.title}</h3>
                   <p className="text-center text-red-600 font-bold mt-1">
-                    ₹{item.finalPrice.toLocaleString()}
+                    ₹{item.finalPrice}
                   </p>
                 </Link>
               ))}
             </div>
           </div>
         )}
+
       </div>
     </div>
   );

@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
-import { ProductContext } from "../context/ProductContext";
+import ProductAPI from "../../api/ProductAPI";
 
 function HeroSection() {
   const [heroSlides, setHeroSlides] = useState([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-    const { fetchProducts } = useContext(ProductContext);
   
 
   const totalSlides = heroSlides.length;
@@ -15,7 +14,7 @@ function HeroSection() {
   useEffect(() => {
   const loadHero = async () => {
     try {
-      const data = await fetchProducts({ tag: "hero-product" });
+      const data = await ProductAPI.getProducts({ tag: "hero-product" }); // Direct API call
       setHeroSlides(data);
     } catch (err) {
       console.error("Failed to load hero products", err);
@@ -136,7 +135,7 @@ function HeroSection() {
         {heroSlides.map((_, index) => (
           <button
             key={index}
-            onClick={() => setCurprentSlideIndex(index)}
+            onClick={() => setCurrentSlideIndex(index)}
             className={`h-[4px] md:h-[6px] rounded-full transition-all ${
               index === currentSlideIndex
                 ? "w-10 md:w-14 bg-red-600"

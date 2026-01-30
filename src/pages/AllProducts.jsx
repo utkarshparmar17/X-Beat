@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 // Import your API file
-import ProductAPI from "../../api/ProductAPI"; 
+import ProductAPI from "../api/ProductAPI"; 
 import { Link } from "react-router-dom";
 import { AiFillStar, AiOutlineFilter, AiOutlineUp, AiOutlineDown } from "react-icons/ai";
-import { useProducts } from "../../context/ProductContext";
+import { useSelector, useDispatch } from "react-redux";
+import { addToCart } from "../redux/slices/cartSlice";
 
 const AllProducts = () => {
-  const { addToCart } = useProducts();
+  const dispatch = useDispatch();
   
   // States
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -173,7 +174,7 @@ const AllProducts = () => {
                       <span className="text-xl font-bold">₹{product.finalPrice.toLocaleString()}</span>
                       <span className="text-xs text-zinc-600 line-through">₹{product.originalPrice.toLocaleString()}</span>
                     </div>
-                    <button onClick={() => addToCart(product)} className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 transition-colors text-xs uppercase tracking-widest">
+                    <button onClick={() => dispatch(addToCart(product))} className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 transition-colors text-xs uppercase tracking-widest">
                       Add to cart
                     </button>
                   </div>

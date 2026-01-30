@@ -60,8 +60,8 @@ function SearchOverlay({ close, initialQuery = "" }) {
                     <div className="mt-4 flex flex-col divide-y divide-zinc-800">
                         {results.slice(0, 8).map((product) => (
                             <Link
-                                key={product.id}
-                                to={`/product-details/${product.id}`}
+                                key={product._id}
+                                to={`/product-details/${product._id}`}
                                 onClick={close}
                                 className="flex items-center gap-4 py-3 px-3 bg-[#111] hover:bg-[#111]/70 transition"
                             >

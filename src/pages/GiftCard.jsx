@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useProducts } from "../../context/ProductContext";
+import { useDispatch } from "react-redux";
+import { addToCart } from "../redux/slices/cartSlice";
 
 export default function GiftCard() {
   const [amount, setAmount] = useState(999);
-  const { addToCart } = useProducts();
+  const dispatch = useDispatch();
 
   const DISCOUNT_PERCENT = 30;
 
@@ -12,7 +13,7 @@ export default function GiftCard() {
   );
 
   const handleAddGiftCard = () => {
-    addToCart({
+    dispatch(addToCart({
       id: `gift-${amount}`,
       brand: "X-Beat",
       title: `Gift Card ₹${amount}`,
@@ -22,7 +23,7 @@ export default function GiftCard() {
       finalPrice: discountedPrice,
       discountPercent: DISCOUNT_PERCENT,
       quantity: 1,
-    });
+    }));
   };
 
   return (

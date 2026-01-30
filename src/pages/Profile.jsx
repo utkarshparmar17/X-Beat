@@ -1,10 +1,8 @@
 import React from "react";
-import { useProducts } from "../../context/ProductContext"; // Fixed path
 import { Link } from "react-router-dom";
 import { AiOutlineLogout, AiOutlineShopping } from "react-icons/ai";
 
 function Profile() {
-  const { cart } = useProducts(); // Matches your Context variable name
 
   return (
     <div className="bg-[#0e0e0e] min-h-screen text-white pt-24 pb-12 px-4 md:px-10 font-sans">
