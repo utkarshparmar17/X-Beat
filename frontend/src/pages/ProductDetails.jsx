@@ -26,7 +26,7 @@ const ProductDetails = () => {
         window.scrollTo(0, 0);
 
         // 1️⃣ Fetch product by ObjectId
-        const productData = await ProductAPI.getProductById(productId);
+        const productData = await ProductAPI.getProductDetails(productId);
         if (!productData) return;
 
         setProduct(productData);

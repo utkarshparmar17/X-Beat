@@ -16,6 +16,7 @@ const AllProducts = () => {
   const [sortBy, setSortBy] = useState("Latest");
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [priceRange, setPriceRange] = useState([0, 25000]);
 
   // --- API CALL LOGIC ---
   useEffect(() => {
@@ -30,8 +31,12 @@ const AllProducts = () => {
       // 2. Call the ProductAPI
       const data = await ProductAPI.getProducts(filters);
       
-      // 3. Apply Sorting to the data received from API
-      let result = [...data];
+      // 3. Apply Price Range Filter
+      let result = data.filter(p => 
+        p.finalPrice >= priceRange[0] && p.finalPrice <= priceRange[1]
+      );
+      
+      // 4. Apply Sorting to the data received from API
       if (sortBy === "Price(Lowest First)") {
         result.sort((a, b) => a.finalPrice - b.finalPrice);
       } else if (sortBy === "Price(Highest First)") {
@@ -45,11 +50,19 @@ const AllProducts = () => {
     };
 
     fetchProducts();
-  }, [selectedBrands, selectedCategories, sortBy]); // Re-runs when filters or sort change
+  }, [selectedBrands, selectedCategories, sortBy, priceRange]); // Re-runs when filters or sort change
 
   // Helper to toggle chips/checkboxes
   const toggleFilter = (item, state, setState) => {
     setState(state.includes(item) ? state.filter((i) => i !== item) : [...state, item]);
+  };
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setSelectedBrands([]);
+    setSelectedCategories([]);
+    setPriceRange([0, 25000]);
+    setSortBy("Latest");
   };
 
   return (
@@ -80,6 +93,25 @@ const AllProducts = () => {
             </section>
 
             <section>
+              <h3 className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-4">Price Range</h3>
+              <div className="space-y-4">
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="25000" 
+                  step="500"
+                  value={priceRange[1]} 
+                  onChange={(e) => setPriceRange([0, parseInt(e.target.value)])}
+                  className="w-full accent-red-600"
+                />
+                <div className="flex justify-between text-xs text-zinc-400">
+                  <span>₹{priceRange[0].toLocaleString()}</span>
+                  <span>₹{priceRange[1].toLocaleString()}</span>
+                </div>
+              </div>
+            </section>
+
+            <section>
               <h3 className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-4">Categories</h3>
               <div className="flex flex-wrap gap-2">
                 {["Headphones", "Earbuds", "Earphones", "Neckbands"].map((cat) => (
@@ -102,6 +134,7 @@ const AllProducts = () => {
                 ))}
               </div>
             </section>
+            <button onClick={clearAllFilters} className="w-full bg-zinc-800 hover:bg-zinc-700 py-3 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">Clear All Filters</button>
             <button onClick={() => setIsFilterOpen(false)} className="w-full bg-red-600 py-4 text-[10px] font-bold uppercase tracking-[0.2em]">Apply & Close</button>
           </div>
         </div>
@@ -111,6 +144,13 @@ const AllProducts = () => {
         
         {/* DESKTOP SIDEBAR */}
         <aside className="hidden lg:block w-72 shrink-0 space-y-12 border-r border-zinc-900 pr-8">
+          <button 
+            onClick={clearAllFilters} 
+            className="w-full bg-zinc-800 hover:bg-zinc-700 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors"
+          >
+            Clear All Filters
+          </button>
+          
           <section>
             <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500 mb-6 border-b border-zinc-900 pb-2">Sort By</h3>
             <ul className="space-y-4 text-xs font-medium">
@@ -121,6 +161,25 @@ const AllProducts = () => {
                 </li>
               ))}
             </ul>
+          </section>
+
+          <section>
+            <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500 mb-6 border-b border-zinc-900 pb-2">Price Range</h3>
+            <div className="space-y-4">
+              <input 
+                type="range" 
+                min="0" 
+                max="25000" 
+                step="500"
+                value={priceRange[1]} 
+                onChange={(e) => setPriceRange([0, parseInt(e.target.value)])}
+                className="w-full accent-red-600 cursor-pointer"
+              />
+              <div className="flex justify-between text-xs text-zinc-400">
+                <span>₹{priceRange[0].toLocaleString()}</span>
+                <span>₹{priceRange[1].toLocaleString()}</span>
+              </div>
+            </div>
           </section>
 
           <section>
